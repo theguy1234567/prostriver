@@ -1,0 +1,8 @@
+@font-face {
+  font-family: garamound;
+  src: url("./assets/Fonts/EBGaramond.otf");
+}
+@import "tailwindcss";
+@theme {
+  --font-garamound: garamound, "sans-serif";
+}
