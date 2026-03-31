@@ -1,10 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { useState } from "react";
-import App_nav from "./components/app_components/App_nav";
+import App_nav from "./components/app_components/App_nav.jsx";
+import AddTopicForm from "./pages/models/AddTopicForm.jsx";
 
 export default function App_layout() {
   const [showAddTopic, setShowAddTopic] = useState(false);
+
+  const closeModal = () => setShowAddTopic(false);
+
+  const refreshTopics = async () => {
+    window.dispatchEvent(new CustomEvent("refreshTopics"));
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-zinc-950 transition-colors duration-300">
@@ -18,9 +24,14 @@ export default function App_layout() {
         "
       >
         <div className="w-full">
-          <Outlet context={{ showAddTopic, setShowAddTopic }} />
+          <Outlet />
         </div>
       </main>
+
+      {/* ✅ GLOBAL ADD TOPIC MODAL */}
+      {showAddTopic && (
+        <AddTopicForm closeModal={closeModal} refreshTopics={refreshTopics} />
+      )}
     </div>
   );
 }

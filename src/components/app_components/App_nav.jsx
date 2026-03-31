@@ -87,7 +87,7 @@ export default function App_nav({ onOpenAddTopic }) {
       </div>
 
       {/* 💻 DESKTOP NAV */}
-      <div className="hidden sm:grid fixed top-0 left-0 w-full z-50 grid-cols-[auto_1fr_auto] dark:bg-zinc-900/30 border-b border-gray-200 dark:border-zinc-800 backdrop-blur-sm h-20 rounded-b-2xl px-4 lg:px-6 py-3 items-center shadow-sm gap-4">
+      <div className="hidden sm:grid fixed top-0 left-0 w-full z-50 grid-cols-[auto_1fr_auto] dark:bg-zinc-900/30 border-b border-gray-200 dark:border-zinc-800 backdrop-blur-2xl h-20 rounded-b-2xl px-4 lg:px-6 py-3 items-center shadow-sm gap-4">
         {/* LEFT */}
         <div className="flex items-center justify-self-start min-w-fit">
           <h1 className="text-lg lg:text-xl font-garamound font-bold text-black dark:text-white whitespace-nowrap">
