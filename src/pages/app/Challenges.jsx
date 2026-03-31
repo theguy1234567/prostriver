@@ -9,58 +9,84 @@ export default function Challenges() {
   const [todayRevisions, setTodayRevisions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Get active challenge
+  // =========================
+  // API LOADERS
+  // =========================
   const getMyChallenge = async () => {
     try {
       const data = await apiFetch("/api/challenges/me");
       setChallenge(data);
     } catch (err) {
-      if (err?.status === 404 || err?.message?.includes("No ACTIVE")) {
+      if (err?.status === 404) {
         setChallenge(null);
       } else {
-        console.error(err);
+        console.error("Challenge fetch error:", err);
       }
     }
   };
 
-  // 🔹 Get plans
   const getPlans = async () => {
     try {
       const data = await apiFetch("/api/challenges/plans");
       setPlans(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error(err);
+      console.error("Plans fetch error:", err);
       setPlans([]);
     }
   };
 
-  // 🔹 Get today's revisions
   const getTodayRevisions = async () => {
     try {
       const data = await apiFetch("/api/topics/revisions/today");
-
-      // IMPORTANT: assume backend may send mixed statuses
-      const pendingOnly = (Array.isArray(data) ? data : []).filter(
-        (r) => r.status === "PENDING",
-      );
-
-      setTodayRevisions(pendingOnly);
+      setTodayRevisions(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error(err);
+      console.error("Revisions fetch error:", err);
       setTodayRevisions([]);
     }
   };
 
-  // 🔹 Init
+  // =========================
+  // INITIAL LOAD
+  // =========================
   useEffect(() => {
     const init = async () => {
-      await Promise.all([getMyChallenge(), getPlans(), getTodayRevisions()]);
-      setLoading(false);
+      try {
+        await Promise.allSettled([
+          getMyChallenge(),
+          getPlans(),
+          getTodayRevisions(),
+        ]);
+      } finally {
+        setLoading(false);
+      }
     };
+
     init();
   }, []);
 
-  // 🔹 Start challenge
+  // =========================
+  // HELPERS
+  // =========================
+  const getDaysLeft = () => {
+    if (!challenge?.endDate) return 0;
+
+    const end = new Date(challenge.endDate);
+    const today = new Date();
+
+    return Math.max(0, Math.ceil((end - today) / (1000 * 60 * 60 * 24)));
+  };
+
+  const formatChallengeType = (type) => {
+    if (!type) return "Unknown";
+    return type
+      .replaceAll("_", " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+
+  // =========================
+  // ACTIONS
+  // =========================
   const handleStart = async (type) => {
     try {
       await apiFetch("/api/challenges/select", {
@@ -68,14 +94,13 @@ export default function Challenges() {
         body: JSON.stringify({ challengeType: type }),
       });
 
-      await getMyChallenge();
-      await getTodayRevisions();
+      await Promise.all([getMyChallenge(), getTodayRevisions()]);
     } catch (err) {
-      alert(err.message || "Error starting challenge");
+      console.error("Start challenge error:", err);
+      alert(err.message || "Failed to start challenge");
     }
   };
 
-  // 🔹 Quit challenge
   const handleQuit = async () => {
     try {
       await apiFetch("/api/challenges/me/quit", {
@@ -85,31 +110,84 @@ export default function Challenges() {
       setChallenge(null);
       setTodayRevisions([]);
     } catch (err) {
-      console.error(err);
+      console.error("Quit challenge error:", err);
+      alert(err.message || "Failed to quit challenge");
     }
   };
 
+  // =========================
+  // LOADING
+  // =========================
   if (loading) {
     return <p className="p-5 text-gray-500">Loading challenges...</p>;
   }
 
   return (
-    <div className="p-5 max-w-5xl mx-auto space-y-8">
-      <h1 className="text-2xl font-bold">Challenges</h1>
+    <div className="p-4   sm:p-6 max-w bg-green-800/10 rounded-full   mx-auto space-y-6">
+      <h1 className="text-2xl font-averaiserif sm:text-6xl font-bold text-center">Lock In With a Challenge</h1>
 
-      {/* 🔥 ACTIVE */}
+      {/* ACTIVE CHALLENGE DETAILS */}
       {challenge && (
-        <ActiveChallengeCard
-          challenge={challenge}
-          todayRevisions={todayRevisions}
-          onQuit={handleQuit}
-        />
+        <>
+          {/* JOURNEY */}
+          <div className="grid grid-cols-2  lg:grid-cols-4 gap-4">
+            <InfoCard
+              label="Challenge Type"
+              value={formatChallengeType(challenge.challengeType)}
+            />
+            <InfoCard
+              label="Duration"
+              value={`${challenge.durationDays} days`}
+            />
+            <InfoCard label="Started" value={challenge.startDate} />
+            <InfoCard label="Ends" value={challenge.endDate} />
+          </div>
+
+          {/* FREEZE + STATUS */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <InfoCard label="Freeze Allowed" value={challenge.freezeAllowed} />
+            <InfoCard label="Freeze Used" value={challenge.freezeUsed} />
+            <InfoCard
+              label="Freeze Remaining"
+              value={challenge.freezeRemaining}
+            />
+            <InfoCard
+              label="Status"
+              value={
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    challenge.status === "ACTIVE"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  {challenge.status}
+                </span>
+              }
+            />
+          </div>
+
+          {/* DAYS LEFT */}
+          <div className="rounded-2xl border p-5 bg-white dark:bg-[#1E293B]">
+            <p className="text-sm text-gray-500">Time Remaining</p>
+            <h2 className="text-3xl font-bold mt-1">
+              {getDaysLeft()} days left
+            </h2>
+          </div>
+
+          {/* ACTIVE CARD */}
+          <ActiveChallengeCard
+            challenge={challenge}
+            todayRevisions={todayRevisions}
+            onQuit={handleQuit}
+          />
+        </>
       )}
 
-      {/* 🎯 AVAILABLE */}
+      {/* AVAILABLE CHALLENGES */}
       {!challenge && (
         <div>
-          <h2 className="text-xl font-semibold mb-4">Available Challenges</h2>
+          
 
           {plans.length === 0 ? (
             <p className="text-gray-500">No challenges available right now.</p>
@@ -129,3 +207,13 @@ export default function Challenges() {
     </div>
   );
 }
+
+// =========================
+// REUSABLE INFO CARD
+// =========================
+const InfoCard = ({ label, value }) => (
+  <div className="rounded-2xl border p-4 bg-white dark:bg-[#1E293B]">
+    <p className="text-sm text-gray-500">{label}</p>
+    <div className="text-lg font-semibold mt-1">{value}</div>
+  </div>
+);

@@ -4,18 +4,22 @@ import { getRoleFromToken } from "../utils/decodeToken";
 export const AuthContext = createContext();
 
 export default function AuthProvider({ children }) {
-  const [accessToken, setAccessToken] = useState(null);
+  const [accessToken, setAccessTokenState] = useState(
+    localStorage.getItem("accessToken"),
+  );
   const [user, setUser] = useState(null);
 
-  // ✅ LOAD TOKEN ON APP START
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
+  // ✅ SINGLE SOURCE OF TRUTH FOR TOKEN
+  const setAccessToken = (token) => {
     if (token) {
-      setAccessToken(token);
+      localStorage.setItem("accessToken", token);
+    } else {
+      localStorage.removeItem("accessToken");
     }
-  }, []);
+    setAccessTokenState(token);
+  };
 
-  // ✅ DECODE ROLE
+  // ✅ DECODE ROLE WHEN TOKEN CHANGES
   useEffect(() => {
     if (accessToken) {
       const role = getRoleFromToken(accessToken);
@@ -25,11 +29,30 @@ export default function AuthProvider({ children }) {
     }
   }, [accessToken]);
 
+  // ✅ LISTEN FOR TOKEN REFRESH FROM apiFetch
+  useEffect(() => {
+    const handleTokenRefresh = (e) => {
+      setAccessToken(e.detail);
+    };
+
+    const handleLogout = () => {
+      setAccessToken(null);
+    };
+
+    window.addEventListener("tokenRefreshed", handleTokenRefresh);
+    window.addEventListener("logout", handleLogout);
+
+    return () => {
+      window.removeEventListener("tokenRefreshed", handleTokenRefresh);
+      window.removeEventListener("logout", handleLogout);
+    };
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
         accessToken,
-        setAccessToken,
+        setAccessToken, // 🔥 use this everywhere
         user,
         setUser,
       }}

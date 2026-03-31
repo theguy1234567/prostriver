@@ -82,7 +82,7 @@ createRoot(document.getElementById("root")).render(
           {" "}
           {/* 🔥 NEW */}
           <RouterProvider router={router} />
-          <Toaster position="top-right" />
+          <Toaster position="top-center" />
         </AnalyticsProvider>
       </AuthProvider>
     </ThemeProvider>

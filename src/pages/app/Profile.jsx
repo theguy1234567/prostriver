@@ -1,32 +1,34 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "../../utils/apiFetch";
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState("");
+  const [profile, setProfile] = useState(null);
   const [editData, setEditData] = useState({
     fullName: "",
     notificationPreference: "EMAIL",
   });
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [error, setError] = useState("");
 
-  // 🔹 Fetch Profile
+  // ✅ Fetch profile
   const fetchProfile = async () => {
     try {
-      const res = await fetch("/api/users/me", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
+      setLoading(true);
+      setError("");
 
-      const data = await res.json();
+      const data = await apiFetch("/api/users/me");
+
       setProfile(data);
       setEditData({
-        fullName: data.fullName || "",
-        notificationPreference: data.notificationPreference || "EMAIL",
+        fullName: data?.fullName || "",
+        notificationPreference: data?.notificationPreference || "EMAIL",
       });
     } catch (err) {
-      console.error("Error fetching profile:", err);
+      console.error("Profile fetch failed:", err);
+      setError("Unable to load profile.");
     } finally {
       setLoading(false);
     }
@@ -36,84 +38,127 @@ export default function ProfilePage() {
     fetchProfile();
   }, []);
 
-  // 🔹 Handle Input Change
+  // ✅ Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setEditData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  // 🔹 Save Changes
+  // ✅ Save changes
   const handleSave = async () => {
-    setSaving(true);
     try {
-      const res = await fetch("/api/users/me", {
+      setSaving(true);
+      setError("");
+
+      const updated = await apiFetch("/api/users/me", {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
         body: JSON.stringify(editData),
       });
 
-      const data = await res.json();
-      setProfile(data);
+      setProfile(updated);
       setEditMode(false);
     } catch (err) {
-      console.error("Error updating profile:", err);
+      console.error("Save failed:", err);
+      setError("Failed to save profile changes.");
     } finally {
       setSaving(false);
     }
   };
 
+  // ✅ Cancel editing
+  const handleCancel = () => {
+    setEditData({
+      fullName: profile?.fullName || "",
+      notificationPreference: profile?.notificationPreference || "EMAIL",
+    });
+
+    setEditMode(false);
+  };
+
+  // ✅ Logout
+  const handleLogout = async () => {
+    try {
+      await apiFetch("/api/auth/logout", {
+        method: "POST",
+      });
+    } catch (err) {
+      console.error("Logout failed:", err);
+    } finally {
+      localStorage.removeItem("accessToken");
+      window.location.href = "/login";
+    }
+  };
+
+  // ✅ Loading UI
   if (loading) {
-    return <div className="p-6 text-white">Loading profile...</div>;
+    return (
+      <div className="p-6 text-zinc-300">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-40 bg-zinc-800 rounded" />
+          <div className="h-72 bg-zinc-900 rounded-2xl" />
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 text-white">
-      <h1 className="text-2xl font-bold mb-6">Profile</h1>
+    <div className="p-4 md:p-6 text-white">
+      <h1 className="text-2xl md:text-3xl font-bold mb-6">Profile</h1>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* 🟦 Profile Info Card */}
-        <div className="bg-zinc-900 rounded-2xl p-6 shadow-md">
-          <h2 className="text-lg font-semibold mb-4">User Info</h2>
+      {/* ✅ Error Banner */}
+      {error && (
+        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          {error}
+        </div>
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* ✅ User Info */}
+        <div className="bg-zinc-900 rounded-2xl p-5 md:p-6 border border-zinc-800 shadow-md">
+          <h2 className="text-lg font-semibold mb-5">User Info</h2>
 
           {/* Full Name */}
-          <div className="mb-4">
-            <label className="text-sm text-gray-400">Full Name</label>
+          <div className="mb-5">
+            <label className="text-sm text-zinc-400">Full Name</label>
+
             {editMode ? (
               <input
                 type="text"
                 name="fullName"
                 value={editData.fullName}
                 onChange={handleChange}
-                className="w-full mt-1 p-2 rounded bg-zinc-800 border border-zinc-700"
+                className="w-full mt-2 p-3 rounded-xl bg-zinc-800 border border-zinc-700 outline-none focus:border-zinc-500"
               />
             ) : (
-              <p className="mt-1">{profile.fullName}</p>
+              <p className="mt-2 text-zinc-100">
+                {profile?.fullName || "Not set"}
+              </p>
             )}
           </div>
 
           {/* Email */}
-          <div className="mb-4">
-            <label className="text-sm text-gray-400">Email</label>
-            <p className="mt-1">{profile.email}</p>
+          <div className="mb-5">
+            <label className="text-sm text-zinc-400">Email</label>
+            <p className="mt-2 text-zinc-100 break-all">{profile?.email}</p>
           </div>
 
-          {/* Created At */}
-          <div className="mb-4">
-            <label className="text-sm text-gray-400">Joined</label>
-            <p className="mt-1">
-              {new Date(profile.createdAt).toLocaleDateString()}
+          {/* Joined */}
+          <div className="mb-5">
+            <label className="text-sm text-zinc-400">Joined</label>
+            <p className="mt-2 text-zinc-100">
+              {profile?.createdAt
+                ? new Date(profile.createdAt).toLocaleDateString()
+                : "N/A"}
             </p>
           </div>
 
           {/* Notification Preference */}
-          <div className="mb-4">
-            <label className="text-sm text-gray-400">
+          <div className="mb-5">
+            <label className="text-sm text-zinc-400">
               Notification Preference
             </label>
 
@@ -122,31 +167,33 @@ export default function ProfilePage() {
                 name="notificationPreference"
                 value={editData.notificationPreference}
                 onChange={handleChange}
-                className="w-full mt-1 p-2 rounded bg-zinc-800 border border-zinc-700"
+                className="w-full mt-2 p-3 rounded-xl bg-zinc-800 border border-zinc-700 outline-none focus:border-zinc-500"
               >
                 <option value="EMAIL">Email</option>
                 <option value="NONE">None</option>
               </select>
             ) : (
-              <p className="mt-1">{profile.notificationPreference}</p>
+              <p className="mt-2 text-zinc-100">
+                {profile?.notificationPreference === "NONE" ? "None" : "Email"}
+              </p>
             )}
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-3 mt-6">
+          <div className="flex flex-wrap gap-3 mt-6">
             {editMode ? (
               <>
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="bg-green-600 px-4 py-2 rounded hover:bg-green-700"
+                  className="bg-green-600 px-5 py-2.5 rounded-xl hover:bg-green-700 disabled:opacity-50"
                 >
-                  {saving ? "Saving..." : "Save"}
+                  {saving ? "Saving..." : "Save Changes"}
                 </button>
 
                 <button
-                  onClick={() => setEditMode(false)}
-                  className="bg-gray-600 px-4 py-2 rounded hover:bg-gray-700"
+                  onClick={handleCancel}
+                  className="bg-zinc-700 px-5 py-2.5 rounded-xl hover:bg-zinc-600"
                 >
                   Cancel
                 </button>
@@ -154,7 +201,7 @@ export default function ProfilePage() {
             ) : (
               <button
                 onClick={() => setEditMode(true)}
-                className="bg-blue-600 px-4 py-2 rounded hover:bg-blue-700"
+                className="bg-blue-600 px-5 py-2.5 rounded-xl hover:bg-blue-700"
               >
                 Edit Profile
               </button>
@@ -162,23 +209,23 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* 🟨 Extra Card (Future Ready) */}
-        <div className="bg-zinc-900 rounded-2xl p-6 shadow-md">
-          <h2 className="text-lg font-semibold mb-4">Account Settings</h2>
+        {/* ✅ Account Settings */}
+        <div className="bg-zinc-900 rounded-2xl p-5 md:p-6 border border-zinc-800 shadow-md h-fit">
+          <h2 className="text-lg font-semibold mb-5">Account Settings</h2>
 
-          <button
-            className="w-full bg-red-600 py-2 rounded hover:bg-red-700"
-            onClick={async () => {
-              await fetch("/api/auth/logout", {
-                method: "POST",
-                credentials: "include",
-              });
-              localStorage.removeItem("accessToken");
-              window.location.href = "/login";
-            }}
-          >
-            Logout
-          </button>
+          <div className="space-y-4">
+            <div className="rounded-xl bg-zinc-800 p-4">
+              <p className="text-sm text-zinc-400 mb-1">Account Status</p>
+              <p className="font-medium text-green-400">Active</p>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="w-full bg-red-600 py-3 rounded-xl hover:bg-red-700 transition"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
     </div>

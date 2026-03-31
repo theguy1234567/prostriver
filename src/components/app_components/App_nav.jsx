@@ -1,51 +1,60 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ThemeContext } from "../../context/ThemeContext";
 import { AuthContext } from "../../context/AuthContext";
 import { useAnalytics } from "../../context/AnalyticsContext";
+import { apiFetch } from "../../utils/apiFetch";
 
-// ✅ Lucide Icons
-import { Home, BookOpen, Brain, Zap, Sun, Moon, Plus } from "lucide-react";
+import {
+  Home,
+  BookOpen,
+  Brain,
+  Zap,
+  Sun,
+  Moon,
+  Plus,
+  UserRound,
+} from "lucide-react";
 
-export default function App_nav() {
+export default function App_nav({ onOpenAddTopic }) {
   const location = useLocation();
   const navigate = useNavigate();
 
   const { dark, setDark } = useContext(ThemeContext);
-  const { user, setAccessToken } = useContext(AuthContext);
+  const { setAccessToken } = useContext(AuthContext);
+
   const { analytics } = useAnalytics();
 
-  const streak = analytics?.challenge?.currentStreak || 0;
+  const challenge = analytics?.challenge;
+  const challengeProgress = challenge?.progressPercent || 0;
+  const hasChallenge = !!challenge;
 
-  const prevStreakRef = useRef(streak);
-  const [animate, setAnimate] = useState(false);
-
-  useEffect(() => {
-    if (streak > prevStreakRef.current) {
-      setAnimate(true);
-      setTimeout(() => setAnimate(false), 800);
-    }
-    prevStreakRef.current = streak;
-  }, [streak]);
-
-  // ✅ NAV ITEMS (icons updated)
   const navItems = [
     { name: "Dashboard", path: "/app", icon: Home },
     { name: "Topics", path: "/app/topics", icon: BookOpen },
     { name: "Revisions", path: "/app/revisions", icon: Brain },
     { name: "Challenges", path: "/app/challenges", icon: Zap },
+    { name: "Profile", path: "/app/profile", icon: UserRound },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    setAccessToken(null);
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await apiFetch("/api/auth/logout", {
+        method: "POST",
+      });
+    } catch (err) {
+      console.error("Logout API failed:", err);
+    } finally {
+      localStorage.removeItem("accessToken");
+      setAccessToken(null);
+      navigate("/login");
+    }
   };
 
   return (
     <>
-      {/* 🌙 MOBILE THEME TOGGLE (TOP LEFT) */}
-      <div className="sm:hidden fixed top-2 left-3 z-1">
+      {/* 🌙 MOBILE THEME TOGGLE */}
+      <div className="sm:hidden fixed top-2 left-3 z-10">
         <button
           onClick={() => setDark(!dark)}
           className="p-2 rounded-full bg-gray-100 dark:bg-[#1E293B] shadow"
@@ -54,35 +63,40 @@ export default function App_nav() {
         </button>
       </div>
 
-      {/* 🔥 MOBILE STREAK */}
-      <div className="sm:hidden fixed top-2 right-3 z-50">
-        <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 dark:bg-[#1E293B] shadow">
-          {Array.from({ length: Math.min(streak, 10) }).map((_, i) => (
-            <span
-              key={i}
-              className={`text-sm font-bold transition-all duration-500
-              ${
-                animate
-                  ? "rotate-180 text-green-400 scale-125"
-                  : "text-yellow-400"
-              }`}
-            >
-              +
-            </span>
-          ))}
-          <span className="ml-2 font-semibold text-xs text-black dark:text-white">
-            {streak}
-          </span>
-        </div>
+      {/* 📱 MOBILE CHALLENGE PROGRESS */}
+      <div className="sm:hidden fixed top-3 right-3 z-50">
+        <button
+          onClick={() => navigate("/app/challenges")}
+          className="px-3 py-2 rounded-full bg-gray-100 dark:bg-[#1E293B] shadow min-w-[120px]"
+        >
+          {hasChallenge ? (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-semibold">Challenge</span>
+              <span className="text-[10px]">•</span>
+              <div className="w-12 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-700 overflow-hidden">
+                <div
+                  className="h-full bg-amber-400 transition-all duration-700"
+                  style={{ width: `${challengeProgress}%` }}
+                />
+              </div>
+            </div>
+          ) : (
+            <span className="text-xs font-semibold">Start</span>
+          )}
+        </button>
       </div>
 
       {/* 💻 DESKTOP NAV */}
-      <div className="hidden sm:flex fixed top-0 left-0 w-full z-50 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 px-6 py-3 items-center justify-between shadow-sm">
-        <h1 className="text-xl font-bold text-black dark:text-white">
-          ProStriver
-        </h1>
+      <div className="hidden sm:grid fixed top-0 left-0 w-full z-50 grid-cols-[auto_1fr_auto] dark:bg-zinc-900/30 border-b border-gray-200 dark:border-zinc-800 backdrop-blur-sm h-20 rounded-b-2xl px-4 lg:px-6 py-3 items-center shadow-sm gap-4">
+        {/* LEFT */}
+        <div className="flex items-center justify-self-start min-w-fit">
+          <h1 className="text-lg lg:text-xl font-garamound font-bold text-black dark:text-white whitespace-nowrap">
+            ProStriver
+          </h1>
+        </div>
 
-        <div className="flex items-center gap-4">
+        {/* CENTER */}
+        <div className="flex font-garamound items-center gap-2 lg:gap-4 justify-center flex-wrap">
           {navItems.map((item) => {
             const active = location.pathname === item.path;
 
@@ -90,8 +104,7 @@ export default function App_nav() {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`px-3 py-1 rounded-lg transition
-                ${
+                className={`px-2 lg:px-3 py-2 text-sm lg:text-base duration-700 rounded-full transition ease-out whitespace-nowrap ${
                   active
                     ? "bg-black text-white dark:bg-white dark:text-black"
                     : "hover:bg-gray-100 dark:hover:bg-zinc-800 text-black dark:text-white"
@@ -103,7 +116,34 @@ export default function App_nav() {
           })}
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* RIGHT */}
+        <div className="flex items-center gap-2 lg:gap-3 justify-self-end min-w-fit">
+          {/* ✅ CHALLENGE BEFORE DARK MODE */}
+          <button
+            onClick={() => navigate("/app/challenges")}
+            className="cursor-pointer hidden lg:block min-w-[170px]"
+          >
+            {hasChallenge ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-garamound text-gray-500 dark:text-gray-400">
+                  Challenge
+                </span>
+                <span className="text-xs text-gray-400">•</span>
+
+                <div className="w-20 h-2 rounded-full bg-gray-200 dark:bg-zinc-700 overflow-hidden">
+                  <div
+                    className="h-full bg-amber-400 transition-all duration-700 ease-out"
+                    style={{ width: `${challengeProgress}%` }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <span className="text-sm font-garamound text-gray-500 dark:text-gray-400">
+                Start a Challenge
+              </span>
+            )}
+          </button>
+
           <button
             onClick={() => setDark(!dark)}
             className="p-2 rounded-lg bg-gray-100 dark:bg-zinc-800"
@@ -113,7 +153,7 @@ export default function App_nav() {
 
           <button
             onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg"
+            className="bg-red-500 font-garamound rounded-full hover:bg-red-600 text-white px-4 lg:px-6 py-3 lg:py-4 whitespace-nowrap"
           >
             Logout
           </button>
@@ -123,7 +163,7 @@ export default function App_nav() {
       {/* ➕ FLOATING BUTTON */}
       <div className="sm:hidden fixed bottom-[10px] left-1/2 -translate-x-1/2 z-50">
         <button
-          onClick={() => navigate("/app/topics")}
+          onClick={onOpenAddTopic}
           className="w-20 h-20 bg-amber-400 rounded-full text-2xl text-white border-4 border-white dark:border-zinc-900 flex items-center justify-center"
         >
           <Plus size={28} />
@@ -132,7 +172,6 @@ export default function App_nav() {
 
       {/* 📱 BOTTOM NAV */}
       <div className="sm:hidden fixed bottom-0 left-0 w-full z-40 bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-800 flex justify-evenly gap-20 items-center py-3 shadow-lg">
-        {/* LEFT */}
         <div className="flex gap-8">
           {navItems.slice(0, 2).map((item) => {
             const active = location.pathname === item.path;
@@ -142,8 +181,7 @@ export default function App_nav() {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex flex-col items-center transition
-                ${
+                className={`flex flex-col items-center transition ${
                   active
                     ? "text-amber-400 scale-110"
                     : "text-gray-500 dark:text-gray-400"
@@ -155,7 +193,6 @@ export default function App_nav() {
           })}
         </div>
 
-        {/* RIGHT */}
         <div className="flex gap-8">
           {navItems.slice(2, 4).map((item) => {
             const active = location.pathname === item.path;
@@ -165,8 +202,7 @@ export default function App_nav() {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex flex-col items-center transition
-                ${
+                className={`flex flex-col items-center transition ${
                   active
                     ? "text-amber-400 scale-110"
                     : "text-gray-500 dark:text-gray-400"

@@ -1,35 +1,62 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiFetch } from "../../utils/apiFetch";
+import toast from "react-hot-toast";
 
 export default function Signup() {
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   const [user, setUser] = useState({
     email: "",
     fullname: "",
     password: "",
+    confirmPassword: "",
   });
 
   const [otp, setOtp] = useState("");
 
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  // ============================
+  // STEP 1 → EMAIL VALIDATION ONLY
+  // ============================
+  const handleEmailNext = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!user.email) {
+      toast.error("Email is required");
+      return;
+    }
+
+    if (!emailRegex.test(user.email)) {
+      toast.error("Enter a valid email");
+      return;
+    }
+
+    setStep(2);
+  };
 
   // ============================
-  // SIGNUP
+  // STEP 2 → PASSWORD + SIGNUP
   // ============================
   const handleSignup = async () => {
+    if (!user.fullname || !user.password || !user.confirmPassword) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    if (user.password !== user.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (user.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
     try {
-      setError("");
-
-      if (!user.email || !user.password || !user.fullname) {
-        setError("All fields are required");
-        return;
-      }
-
       setLoading(true);
 
       await apiFetch("/api/auth/signup", {
@@ -41,29 +68,13 @@ export default function Signup() {
         }),
       });
 
-      // ✅ New user → go OTP
+      toast.success("OTP sent to your email");
       setStep(3);
     } catch (err) {
-      console.log("Signup error:", err);
-
-      // 🔥 Duplicate email handling
       if (err.status === 409) {
-        try {
-          // Try resend OTP → means user not verified
-          await apiFetch(
-            `/api/auth/signup/resend-otp?email=${encodeURIComponent(user.email)}`,
-            { method: "POST" },
-          );
-
-          setError("Account exists. OTP resent.");
-          setStep(3);
-        } catch {
-          // User already verified
-          setError("Account already exists. Please login.");
-          navigate("/login");
-        }
+        toast.error("Account already exists. Please login.");
       } else {
-        setError(err.message);
+        toast.error(err.message || "Signup failed");
       }
     } finally {
       setLoading(false);
@@ -71,151 +82,178 @@ export default function Signup() {
   };
 
   // ============================
-  // VERIFY OTP
+  // STEP 3 → OTP VERIFY
   // ============================
   const handleOtp = async () => {
     try {
       setLoading(true);
-      setError("");
 
       await apiFetch("/api/auth/signup/verify-otp", {
         method: "POST",
         body: JSON.stringify({
           email: user.email,
           purpose: "SIGNUP_VERIFY_EMAIL",
-          otp: otp,
+          otp,
         }),
       });
 
+      toast.success("Email verified successfully");
       navigate("/login");
     } catch (err) {
-      if (err.message.toLowerCase().includes("expired")) {
-        setError("OTP expired. Please resend.");
-      } else if (err.message.toLowerCase().includes("invalid")) {
-        setError("Invalid OTP.");
-      } else {
-        setError(err.message);
-      }
+      toast.error(err.message || "OTP verification failed");
     } finally {
       setLoading(false);
     }
   };
 
-  // ============================
-  // RESEND OTP
-  // ============================
   const handleResendOtp = async () => {
     try {
       setLoading(true);
-      setError("");
 
       await apiFetch(
         `/api/auth/signup/resend-otp?email=${encodeURIComponent(user.email)}`,
         { method: "POST" },
       );
 
-      setError("OTP sent again!");
+      toast.success("OTP sent again!");
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message || "Failed to resend OTP");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-sky-100 min-h-screen flex justify-center items-center">
-      <div className="bg-red-100 h-[75vh] w-[60vw] rounded-2xl p-4 flex flex-row">
+    <div className="bg-sky-100 min-h-screen flex justify-center items-center px-4 py-6">
+      <div className="bg-red-100 w-full max-w-6xl min-h-[85vh] rounded-2xl p-4 flex flex-col md:flex-row gap-4">
         {/* LEFT FORM */}
-        <div className="bg-sky-400/50 rounded-4xl rounded-r-2xl w-[60%] flex flex-col items-center justify-center">
-          <h2 className="text-2xl mb-4 font-semibold">
-            {step === 1 && "Create Account"}
-            {step === 2 && "Your Details"}
-            {step === 3 && "Verify OTP"}
-          </h2>
+        <div className="bg-sky-400/50 rounded-3xl md:rounded-4xl w-full md:w-[60%] flex items-center justify-center overflow-hidden px-4 sm:px-6 py-6 sm:py-8">
+          <div className="w-full overflow-hidden">
+            <div
+              className="flex w-full transition-transform duration-500 ease-in-out"
+              style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
+            >
+              {/* STEP 1 */}
+              <div className="min-w-full flex flex-col items-center justify-center font-averaiserif">
+                <h2 className="text-2xl mb-4 font-semibold">Enter Email</h2>
 
-          {/* STEP 1 */}
-          {step === 1 && (
-            <>
-              <input
-                className="input px-4 py-3 m-2 rounded-lg"
-                placeholder="Email"
-                value={user.email}
-                onChange={(e) => setUser({ ...user, email: e.target.value })}
-              />
+                <input
+                  className="w-full max-w-md bg-white px-4 py-3 rounded-lg outline-none"
+                  placeholder="Email"
+                  value={user.email}
+                  onChange={(e) => setUser({ ...user, email: e.target.value })}
+                />
 
-              <input
-                className="input px-4 py-3 m-2 rounded-lg"
-                placeholder="Password"
-                type="password"
-                value={user.password}
-                onChange={(e) => setUser({ ...user, password: e.target.value })}
-              />
+                <button
+                  className="bg-sky-400 p-3 rounded-lg px-10 mt-6 w-full max-w-md"
+                  onClick={handleEmailNext}
+                  disabled={loading}
+                >
+                  Next
+                </button>
+              </div>
 
-              <button onClick={() => setStep(2)}>Next</button>
-            </>
-          )}
+              {/* STEP 2 */}
+              <div className="min-w-full flex flex-col items-center justify-center font-averaiserif">
+                <h2 className="text-2xl mb-4 font-semibold">
+                  Secure Your Account
+                </h2>
 
-          {/* STEP 2 */}
-          {step === 2 && (
-            <>
-              <input
-                className="input px-4 py-3 m-2 rounded-lg"
-                placeholder="Full Name"
-                value={user.fullname}
-                onChange={(e) => setUser({ ...user, fullname: e.target.value })}
-              />
+                <div className="w-full max-w-md space-y-4">
+                  <input
+                    className="w-full bg-white px-4 py-3 rounded-lg outline-none"
+                    placeholder="Full Name"
+                    value={user.fullname}
+                    onChange={(e) =>
+                      setUser({ ...user, fullname: e.target.value })
+                    }
+                  />
 
-              <button onClick={handleSignup} disabled={loading}>
-                {loading ? "Creating..." : "Next"}
-              </button>
-            </>
-          )}
+                  <input
+                    className="w-full bg-white px-4 py-3 rounded-lg outline-none"
+                    type="password"
+                    placeholder="Password"
+                    value={user.password}
+                    onChange={(e) =>
+                      setUser({ ...user, password: e.target.value })
+                    }
+                  />
 
-          {/* STEP 3 */}
-          {step === 3 && (
-            <>
-              <input
-                className="input px-4 py-3 m-2 rounded-lg"
-                value={user.email}
-                disabled
-              />
+                  <input
+                    className="w-full bg-white px-4 py-3 rounded-lg outline-none"
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={user.confirmPassword}
+                    onChange={(e) =>
+                      setUser({
+                        ...user,
+                        confirmPassword: e.target.value,
+                      })
+                    }
+                  />
 
-              <input
-                className="input px-4 py-3 m-2 rounded-lg"
-                placeholder="Enter OTP"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-              />
+                  <button
+                    className="w-full bg-sky-400 py-3 rounded-lg"
+                    onClick={handleSignup}
+                    disabled={loading}
+                  >
+                    {loading ? "Creating..." : "Create Account"}
+                  </button>
+                </div>
+              </div>
 
-              <button onClick={handleOtp} disabled={loading}>
-                {loading ? "Verifying..." : "Verify OTP"}
-              </button>
+              {/* STEP 3 */}
+              <div className="min-w-full flex flex-col items-center justify-center font-averaiserif">
+                <h2 className="text-2xl mb-4 font-semibold">Verify OTP</h2>
 
-              <button
-                onClick={handleResendOtp}
-                className="text-blue-600 underline mt-2"
-              >
-                Resend OTP
-              </button>
-            </>
-          )}
+                <div className="w-full max-w-md space-y-4">
+                  <input
+                    className="w-full bg-white px-4 py-3 rounded-lg outline-none"
+                    value={user.email}
+                    disabled
+                  />
 
-          {error && (
-            <p className="text-red-600 text-sm mt-2 text-center px-4">
-              {error}
-            </p>
-          )}
+                  <input
+                    className="w-full bg-white px-4 py-3 rounded-lg outline-none"
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
+
+                  <button
+                    className="w-full bg-sky-400 py-3 rounded-lg"
+                    onClick={handleOtp}
+                    disabled={loading}
+                  >
+                    {loading ? "Verifying..." : "Verify OTP"}
+                  </button>
+
+                  <button
+                    onClick={handleResendOtp}
+                    className="text-blue-600 underline mt-2 w-full"
+                  >
+                    Resend OTP
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="bg-[#D7CDCC] rounded-3xl w-[40%] flex flex-col items-center justify-center">
-          <h1 className="text-4xl text-center">
-            Welcome to <i>pro</i>strive
+        <div className="bg-[#D7CDCC] rounded-3xl w-full md:w-[40%] flex flex-col items-center justify-center p-6 text-center">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-averaiserif leading-tight">
+            Welcome to <i className="font-garamound">pro</i>strive
           </h1>
 
-          <p className="mt-5">Already have an account?</p>
+          <p className="mt-5 font-averaiserif text-sm sm:text-base">
+            Already have an account?
+          </p>
 
-          <Link to="/login" className="text-blue-600 underline mt-2">
+          <Link
+            to="/login"
+            className="text-blue-600 underline mt-2 font-averaiserif"
+          >
             Login
           </Link>
         </div>

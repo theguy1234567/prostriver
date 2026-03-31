@@ -3,7 +3,11 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const apiFetch = async (endpoint, options = {}) => {
   let token = localStorage.getItem("accessToken");
 
+  // 🔁 function to make request
   const makeRequest = async (customToken = token) => {
+    console.log("➡️ API CALL:", `${BASE_URL}${endpoint}`);
+    console.log("🔐 TOKEN:", customToken);
+
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       ...options,
       headers: {
@@ -11,8 +15,10 @@ export const apiFetch = async (endpoint, options = {}) => {
         ...(customToken && { Authorization: `Bearer ${customToken}` }),
         ...options.headers,
       },
-      credentials: "include", // required for refresh cookie
+      credentials: "include", // 🔥 needed for refresh cookie
     });
+
+    console.log("📡 STATUS:", res.status);
 
     const text = await res.text();
 
@@ -23,53 +29,72 @@ export const apiFetch = async (endpoint, options = {}) => {
       data = { message: text };
     }
 
+    console.log("📦 RESPONSE:", data);
+
     return { res, data };
   };
 
-  // 🔹 First request
+  // 🔹 FIRST REQUEST
   let { res, data } = await makeRequest();
 
-  // 🔥 HANDLE 401 → refresh token
+  // 🔥 HANDLE 401 → try refresh
   if (res.status === 401) {
+    console.log("⚠️ 401 detected → trying refresh...");
+
     try {
       const refreshRes = await fetch(`${BASE_URL}/api/auth/refresh`, {
         method: "POST",
         credentials: "include",
       });
 
-      const refreshText = await refreshRes.text();
+      console.log("🔄 REFRESH STATUS:", refreshRes.status);
 
-      let refreshData;
-      try {
-        refreshData = JSON.parse(refreshText);
-      } catch {
-        throw new Error("Invalid refresh response");
+      if (!refreshRes.ok) {
+        throw new Error("Refresh failed");
       }
 
-      if (!refreshRes.ok) throw new Error("Refresh failed");
+      const refreshData = await refreshRes.json();
+
+      console.log("✅ REFRESH SUCCESS:", refreshData);
+
+      const newToken = refreshData.accessToken;
 
       // ✅ store new token
-      localStorage.setItem("accessToken", refreshData.accessToken);
+      localStorage.setItem("accessToken", newToken);
 
-      // 🔁 retry original request with new token
-      const retry = await makeRequest(refreshData.accessToken);
+      // ✅ update AuthContext instantly
+      window.dispatchEvent(
+        new CustomEvent("tokenRefreshed", {
+          detail: newToken,
+        }),
+      );
+
+      // 🔁 retry original request
+      const retry = await makeRequest(newToken);
 
       if (!retry.res.ok) {
         throw {
           status: retry.res.status,
           message:
-            retry.data?.message ||
-            JSON.stringify(retry.data?.errors) ||
-            "Retry failed",
+            retry.data?.message || "Retry request failed after token refresh",
+          data: retry.data,
         };
       }
 
       return retry.data;
     } catch (err) {
-      // ❌ refresh failed → logout user
+      console.log("🚨 FINAL AUTH FAILURE:", err);
+
+      // ❗ clear token
       localStorage.removeItem("accessToken");
-      window.location.href = "/login";
-      throw new Error("Session expired. Please login again.");
+
+      // ✅ tell whole app logout happened
+      window.dispatchEvent(new CustomEvent("logout"));
+
+      throw {
+        status: 401,
+        message: "Session expired. Please login again.",
+      };
     }
   }
 

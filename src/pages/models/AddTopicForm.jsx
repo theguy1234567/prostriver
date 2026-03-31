@@ -1,52 +1,85 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { X } from "lucide-react";
+import { X, CalendarDays, ChevronDown } from "lucide-react";
+import { apiFetch } from "../../utils/apiFetch";
 
 export default function AddTopicForm({
   closeModal,
   editingTopic,
   refreshTopics,
 }) {
+  const isEdit = !!editingTopic;
+
   const [title, setTitle] = useState(editingTopic?.title || "");
   const [subject, setSubject] = useState(editingTopic?.subject || "");
   const [notes, setNotes] = useState(editingTopic?.notes || "");
 
-  const [revisionPlanId, setRevisionPlanId] = useState("");
+  const [revisionType, setRevisionType] = useState("manual"); // manual | premade | none
   const [manualPattern, setManualPattern] = useState("");
+  const [revisionPlans, setRevisionPlans] = useState([]);
+  const [selectedPlanId, setSelectedPlanId] = useState("");
 
-  const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [plansLoading, setPlansLoading] = useState(false);
 
-  const isEdit = !!editingTopic;
-
-  // ✅ fetch revision plans
   useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const res = await fetch("/api/admin/revision-plans", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        });
-
-        if (!res.ok) return;
-
-        const data = await res.json();
-        setPlans(data);
-      } catch {}
-    };
-
-    fetchPlans();
-  }, []);
-
-  // ✅ ESC close
-  useEffect(() => {
-    const handleKey = (e) => {
-      if (e.key === "Escape") closeModal();
-    };
+    const handleKey = (e) => e.key === "Escape" && closeModal();
     document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
+
+    // blur + disable scroll including navbar area
+    document.body.classList.add("overflow-hidden");
+
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.body.classList.remove("overflow-hidden");
+    };
   }, [closeModal]);
+
+  useEffect(() => {
+    if (isEdit) return;
+
+    const loadPlans = async () => {
+      try {
+        setPlansLoading(true);
+        const data = await apiFetch("/api/admin/revision-plans", {
+          method: "GET",
+        });
+        setRevisionPlans(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load revision plans");
+      } finally {
+        setPlansLoading(false);
+      }
+    };
+
+    loadPlans();
+  }, [isEdit]);
+
+  const validatePattern = (pattern) => {
+    if (!pattern) return null;
+
+    const cleaned = pattern.replace(/\s+/g, "");
+
+    if (!/^(\d+)(,\d+)*$/.test(cleaned)) {
+      toast.error("Use format like 1,4,7");
+      return false;
+    }
+
+    const days = cleaned.split(",").map(Number);
+
+    if (days.some((day) => day < 1 || day > 15)) {
+      toast.error("Revision days must be between 1 and 15");
+      return false;
+    }
+
+    if (new Set(days).size !== days.length) {
+      toast.error("Duplicate days are not allowed");
+      return false;
+    }
+
+    return cleaned;
+  };
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) closeModal();
@@ -60,54 +93,53 @@ export default function AddTopicForm({
       return;
     }
 
-    // ❗ rule: only one allowed
-    if (revisionPlanId && manualPattern) {
-      toast.error("Choose either plan OR manual pattern");
-      return;
+    let revisionPlanId = null;
+    let cleanedPattern = null;
+
+    if (!isEdit) {
+      if (revisionType === "manual") {
+        const validated = validatePattern(manualPattern);
+        if (validated === false) return;
+        cleanedPattern = validated;
+      }
+
+      if (revisionType === "premade") {
+        if (!selectedPlanId) {
+          toast.error("Please select a revision plan");
+          return;
+        }
+        revisionPlanId = selectedPlanId;
+      }
     }
 
-    setLoading(true);
-
     try {
-      const url = isEdit ? `/api/topics/${editingTopic.id}` : `/api/topics`;
-
-      const method = isEdit ? "PATCH" : "POST";
+      setLoading(true);
 
       const body = {
-        title,
-        subject,
-        notes,
+        title: title.trim(),
+        subject: subject.trim(),
+        notes: notes.trim(),
       };
 
       if (!isEdit) {
-        if (revisionPlanId) body.revisionPlanId = revisionPlanId;
-        if (manualPattern) body.manualReminderPattern = manualPattern;
+        body.revisionPlanId = revisionPlanId;
+        body.manualReminderPattern = cleanedPattern;
       }
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      await apiFetch(
+        isEdit ? `/api/topics/${editingTopic.id}` : "/api/topics",
+        {
+          method: isEdit ? "PATCH" : "POST",
+          body: JSON.stringify(body),
         },
-        body: JSON.stringify(body),
-      });
+      );
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        if (typeof data === "object" && !data.message) {
-          throw new Error(Object.values(data)[0]);
-        }
-        throw new Error(data.message);
-      }
-
-      toast.success(isEdit ? "Updated" : "Added");
-
-      refreshTopics();
+      toast.success(isEdit ? "Topic updated" : "Topic added");
+      await refreshTopics();
       closeModal();
     } catch (err) {
-      toast.error(err.message || "Error");
+      console.error(err);
+      toast.error(err?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -116,78 +148,112 @@ export default function AddTopicForm({
   return (
     <div
       onClick={handleOverlayClick}
-      className="fixed h-screen w-screen inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[100]"
+      className="fixed inset-0 z-[9999] bg-black/45 backdrop-blur-md flex items-center justify-center px-4 py-6"
     >
-      <div className="bg-white dark:bg-[#1E293B] p-6 rounded-2xl w-full max-w-lg relative fade-up">
+      <div className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-[#1E293B] shadow-2xl p-6 sm:p-7 max-h-[90vh] overflow-y-auto">
         <button
           onClick={closeModal}
-          className="absolute top-3 right-3 text-gray-500 hover:text-black dark:hover:text-white"
+          className="absolute top-5 right-5 text-gray-400 hover:text-red-500 transition"
         >
-          <X size={20} />
+          <X size={22} />
         </button>
 
-        <h2 className="text-lg font-semibold mb-4">
-          {isEdit ? "Edit Topic" : "Add Topic"}
+        <h2 className="text-2xl font-semibold text-slate-800 dark:text-white mb-6">
+          {isEdit ? "Edit Topic" : "Add New Topic"}
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Title"
-            className="w-full p-2 rounded bg-gray-100 dark:bg-zinc-800 text-black dark:text-white focus:ring-2 focus:ring-amber-400 outline-none"
+            placeholder="Topic title"
+            className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 outline-none focus:ring-2 focus:ring-amber-400"
           />
 
           <input
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Subject"
-            className="w-full p-2 rounded bg-gray-100 dark:bg-zinc-800 text-black dark:text-white focus:ring-2 focus:ring-amber-400 outline-none"
+            className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 outline-none focus:ring-2 focus:ring-amber-400"
           />
 
           <textarea
+            rows={3}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Notes"
-            className="w-full p-2 rounded bg-gray-100 dark:bg-zinc-800 text-black dark:text-white focus:ring-2 focus:ring-amber-400 outline-none"
+            placeholder="Notes (optional)"
+            className="w-full px-4 py-3 rounded-2xl bg-gray-100 dark:bg-zinc-800 outline-none resize-none focus:ring-2 focus:ring-amber-400"
           />
 
-          {/* 🔥 Revision Plan */}
           {!isEdit && (
             <>
-              <select
-                value={revisionPlanId}
-                onChange={(e) => {
-                  setRevisionPlanId(e.target.value);
-                  setManualPattern("");
-                }}
-                className="w-full p-2 rounded bg-gray-100 dark:bg-zinc-800"
-              >
-                <option value="">No Revision</option>
-                {plans.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} ({p.revisionDaysPattern})
-                  </option>
-                ))}
-              </select>
+              <div>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
+                  Revision Type
+                </label>
+                <select
+                  value={revisionType}
+                  onChange={(e) => setRevisionType(e.target.value)}
+                  className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="manual">Custom Pattern</option>
+                  <option value="premade">Premade Plan</option>
+                  <option value="none">No Revisions</option>
+                </select>
+              </div>
 
-              <input
-                value={manualPattern}
-                onChange={(e) => {
-                  setManualPattern(e.target.value);
-                  setRevisionPlanId("");
-                }}
-                placeholder="Custom pattern (e.g. 1,4,7)"
-                className="w-full p-2 rounded bg-gray-100 dark:bg-zinc-800"
-              />
+              {revisionType === "manual" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2">
+                    <CalendarDays size={16} />
+                    Revision Days Pattern
+                  </label>
+                  <input
+                    value={manualPattern}
+                    onChange={(e) => setManualPattern(e.target.value)}
+                    placeholder="Example: 1,4,7"
+                    className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 outline-none focus:ring-2 focus:ring-amber-400"
+                  />
+                  <p className="text-xs text-slate-500">
+                    Enter revision days between 1–15
+                  </p>
+                </div>
+              )}
+
+              {revisionType === "premade" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                    Choose Premade Plan
+                  </label>
+                  <select
+                    value={selectedPlanId}
+                    onChange={(e) => setSelectedPlanId(e.target.value)}
+                    disabled={plansLoading}
+                    className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 outline-none focus:ring-2 focus:ring-amber-400"
+                  >
+                    <option value="">
+                      {plansLoading ? "Loading plans..." : "Select a plan"}
+                    </option>
+                    {revisionPlans.map((plan) => (
+                      <option key={plan.id} value={plan.id}>
+                        {plan.name}{" "}
+                        {plan.revisionDaysPattern
+                          ? `(${plan.revisionDaysPattern})`
+                          : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </>
           )}
 
           <button
+            type="submit"
             disabled={loading}
-            className="w-full bg-amber-400 py-2 rounded hover:bg-amber-500 disabled:opacity-60"
+            className="w-full h-12 rounded-2xl bg-amber-400 hover:bg-amber-500 transition font-semibold text-black disabled:opacity-60"
           >
-            {loading ? "Saving..." : "Save"}
+            {loading ? "Saving..." : isEdit ? "Update Topic" : "Save Topic"}
           </button>
         </form>
       </div>
