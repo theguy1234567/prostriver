@@ -13,7 +13,7 @@ export default function LandingNavbar() {
     >
       {/* Logo */}
       <h1
-        className="font-garamound text-gray-900 text-xl cursor-pointer"
+        className="font-garamound text-gray-900 select-none text-xl cursor-pointer"
         onClick={() => navigate("/")}
       >
         Prostriver.
@@ -21,19 +21,19 @@ export default function LandingNavbar() {
 
       {/* Nav Links */}
       <div className="flex items-center gap-6 text-sm">
-        <button
+        {/* <button
           onClick={() => navigate("/")}
           className="hover:text-lime-300 transition"
         >
           Home
-        </button>
+        </button> */}
 
-        <button
+        {/* <button
           onClick={() => navigate("/about")}
           className="hover:text-lime-300 transition"
         >
           About
-        </button>
+        </button> */}
 
         <button
           onClick={() => navigate("/signin")}

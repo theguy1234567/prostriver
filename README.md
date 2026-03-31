@@ -17,4 +17,7 @@ If you are developing a production application, we recommend using TypeScript wi
 
 
 //Prostriver project
-from new machine
+changed two new files from new machine
+    protectedRoutes
+    Public.jsx
+    pull from main maching to keep updated

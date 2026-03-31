@@ -19,7 +19,6 @@ import Signup from "./pages/Landing/Signup.jsx";
 
 import ProtectedRoutes from "./ProtectedRoutes.jsx";
 
-// 🔥 NEW IMPORTS (ONLY THESE ADDED)
 import AdminRoute from "./AdminRoute.jsx";
 import AuthProvider from "./context/AuthContext";
 import Admin from "./pages/app/Admin.jsx";
@@ -34,7 +33,7 @@ import Challenges from "./pages/app/Challenges.jsx";
 
 import ThemeProvider from "./context/ThemeContext";
 import Livein from "./Livein.jsx";
-
+import Public from "./Public.jsx";
 import { Toaster } from "react-hot-toast";
 
 const router = createBrowserRouter(
@@ -46,8 +45,10 @@ const router = createBrowserRouter(
       </Route>
 
       {/* Auth */}
-      <Route path="/signin" element={<Signup />} />
-      <Route path="/login" element={<Login />} />
+      <Route element={<Public />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signin" element={<Signup />} />
+      </Route>
 
       <Route path="/howlong" element={<Livein />} />
       <Route path="/test" element={<App />} />
@@ -62,7 +63,7 @@ const router = createBrowserRouter(
         </Route>
       </Route>
 
-      {/* 🔥 ADMIN ONLY (NEW) */}
+      {/* 🔥 ADMIN Check admin routes  */}
       <Route element={<AdminRoute />}>
         <Route element={<ProtectedRoutes />}>
           <Route path="/admin" element={<App_layout />}>

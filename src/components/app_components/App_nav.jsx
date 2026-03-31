@@ -82,8 +82,8 @@ export default function App_nav({ onOpenAddTopic }) {
           )}
         </button>
       </div>
-
-      <div className="hidden sm:flex fixed top-0 left-0 w-full z-50 dark:bg-zinc-900/30 border-b border-gray-200 dark:border-zinc-800 backdrop-blur-2xl h-20 rounded-b-2xl px-4 lg:px-6 py-3 items-center justify-between shadow-sm">
+          {/* desktop nav here */}
+      <div className="hidden sm:flex fixed top-0 left-0 w-full mb-10 z-50 dark:bg-zinc-900/30 border-b border-gray-200 dark:border-zinc-800 backdrop-blur-2xl h-20 rounded-b-2xl px-4 lg:px-6 py-3 items-center justify-between shadow-sm">
         <div className="flex items-center min-w-fit z-10">
           <h1 className="text-lg lg:text-xl font-garamound font-bold text-black dark:text-white whitespace-nowrap">
             ProStriver

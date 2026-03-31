@@ -148,9 +148,18 @@ export default function AddTopicForm({
   return (
     <div
       onClick={handleOverlayClick}
-      className="fixed inset-0 z-[9999] bg-black/45 backdrop-blur-md flex items-center justify-center px-4 py-6"
+      className="fixed inset-0 z-[9999] bg-black/45 backdrop-blur-md flex justify-center items-start px-4"
+      style={{ paddingTop: "110px", paddingBottom: "24px" }}
     >
-      <div className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-[#1E293B] shadow-2xl p-6 sm:p-7 max-h-[90vh] overflow-y-auto">
+      <div
+        className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-[#1E293B] shadow-2xl p-6 sm:p-7"
+        style={{
+          maxHeight: "calc(100vh - 140px)",
+          overflowY: "auto",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
+      >
         <button
           onClick={closeModal}
           className="absolute top-5 right-5 text-gray-400 hover:text-red-500 transition"
@@ -236,9 +245,9 @@ export default function AddTopicForm({
                     </option>
                     {revisionPlans.map((plan) => (
                       <option key={plan.id} value={plan.id}>
-                        {plan.name}{" "}
+                        {plan.name}
                         {plan.revisionDaysPattern
-                          ? `(${plan.revisionDaysPattern})`
+                          ? ` (${plan.revisionDaysPattern})`
                           : ""}
                       </option>
                     ))}
@@ -259,4 +268,5 @@ export default function AddTopicForm({
       </div>
     </div>
   );
+
 }

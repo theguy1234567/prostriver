@@ -13,12 +13,12 @@ export default function App_layout() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-zinc-950 transition-colors duration-300">
+    <div className="min-h-screen  bg-gray-100 dark:bg-zinc-950 transition-colors duration-300">
       <App_nav onOpenAddTopic={() => setShowAddTopic(true)} />
 
       <main
         className="
-          pt-20 sm:pt-24
+          pt-20 sm:pt-23
           pb-20 sm:pb-6
           px-4 sm:px-8
         "
@@ -28,7 +28,7 @@ export default function App_layout() {
         </div>
       </main>
 
-      {/* ✅ GLOBAL ADD TOPIC MODAL */}
+      
       {showAddTopic && (
         <AddTopicForm closeModal={closeModal} refreshTopics={refreshTopics} />
       )}

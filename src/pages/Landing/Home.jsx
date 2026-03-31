@@ -5,7 +5,6 @@ import img1 from "../../assets/test1.jpg";
 import img2 from "../../assets/test2.jpg";
 import img3 from "../../assets/test3.jpg";
 
-/* 🔥 LUCIDE ICONS */
 import { TrendingUp, BookOpen, Plus, Shell } from "lucide-react";
 
 function Home() {
@@ -30,7 +29,6 @@ function Home() {
           </span>
         </div>
 
-        {/* Subtitle */}
         <p className="mt-4 sm:mt-6 mb-8 md:mb-10 text-lg sm:text-2xl md:text-4xl font-averaiserif fade-up [animation-delay:0.4s] opacity-0">
           Your Flow state Begins here
         </p>
@@ -38,7 +36,7 @@ function Home() {
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 fade-up [animation-delay:0.6s] opacity-0">
           <button
-            onClick={() => navigate("/signin")}
+            onClick={() => navigate("/login")}
             className="bg-sky-400/50 px-6 py-3 rounded-lg text-lg sm:text-xl hover:bg-sky-200 shadow-lg transition hover:-translate-y-1"
           >
             Get started

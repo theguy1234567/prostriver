@@ -6,6 +6,7 @@ export default function ProtectedRoute() {
   const { accessToken, authLoading } = useContext(AuthContext);
 
   //  wait until initial refresh check completes
+  //check public if not wroking
   if (authLoading) {
     return <div>Loading...</div>;
   }

@@ -38,7 +38,8 @@ export default function AuthProvider({ children }) {
       try {
         const res = await fetch(`${API_BASE}/api/auth/refresh`, {
           method: "POST",
-          credentials: "include", // 🔥 VERY IMPORTANT
+          credentials: "include", // this is required evrywhere
+          
         });
 
         if (res.ok) {
