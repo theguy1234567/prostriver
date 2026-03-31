@@ -3,9 +3,17 @@ import { AuthContext } from "./context/AuthContext";
 import { Navigate, Outlet } from "react-router-dom";
 
 export default function ProtectedRoute() {
-  const { accessToken } = useContext(AuthContext);
+  const { accessToken, authLoading } = useContext(AuthContext);
 
-  if (!accessToken) return <Navigate to="/login" replace />;
+  //  wait until initial refresh check completes
+  if (authLoading) {
+    return <div>Loading...</div>;
+  }
+
+  //  only redirect after loading finishes
+  if (!accessToken) {
+    return <Navigate to="/login" replace />;
+  }
 
   return <Outlet />;
 }

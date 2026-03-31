@@ -8,18 +8,21 @@ export default function AuthProvider({ children }) {
     localStorage.getItem("accessToken"),
   );
   const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
-  // ✅ SINGLE SOURCE OF TRUTH FOR TOKEN
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
   const setAccessToken = (token) => {
     if (token) {
       localStorage.setItem("accessToken", token);
     } else {
       localStorage.removeItem("accessToken");
     }
+
     setAccessTokenState(token);
   };
 
-  // ✅ DECODE ROLE WHEN TOKEN CHANGES
+  // Decode role whenever token changes
   useEffect(() => {
     if (accessToken) {
       const role = getRoleFromToken(accessToken);
@@ -29,7 +32,36 @@ export default function AuthProvider({ children }) {
     }
   }, [accessToken]);
 
-  // ✅ LISTEN FOR TOKEN REFRESH FROM apiFetch
+  //  IMPORTANT: Refresh token when app first loads
+  useEffect(() => {
+    const bootstrapAuth = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/refresh`, {
+          method: "POST",
+          credentials: "include", // 🔥 VERY IMPORTANT
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+
+          if (data.accessToken) {
+            setAccessToken(data.accessToken);
+          }
+        } else {
+          setAccessToken(null);
+        }
+      } catch (err) {
+        console.error("Initial refresh failed:", err);
+        setAccessToken(null);
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    bootstrapAuth();
+  }, []);
+
+  //  Listen for refresh event from apiFetch
   useEffect(() => {
     const handleTokenRefresh = (e) => {
       setAccessToken(e.detail);
@@ -52,9 +84,10 @@ export default function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         accessToken,
-        setAccessToken, // 🔥 use this everywhere
+        setAccessToken,
         user,
         setUser,
+        authLoading,
       }}
     >
       {children}

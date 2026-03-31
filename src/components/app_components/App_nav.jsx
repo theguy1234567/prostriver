@@ -22,7 +22,6 @@ export default function App_nav({ onOpenAddTopic }) {
 
   const { dark, setDark } = useContext(ThemeContext);
   const { setAccessToken } = useContext(AuthContext);
-
   const { analytics } = useAnalytics();
 
   const challenge = analytics?.challenge;
@@ -53,7 +52,6 @@ export default function App_nav({ onOpenAddTopic }) {
 
   return (
     <>
-      {/* 🌙 MOBILE THEME TOGGLE */}
       <div className="sm:hidden fixed top-2 left-3 z-10">
         <button
           onClick={() => setDark(!dark)}
@@ -63,7 +61,6 @@ export default function App_nav({ onOpenAddTopic }) {
         </button>
       </div>
 
-      {/* 📱 MOBILE CHALLENGE PROGRESS */}
       <div className="sm:hidden fixed top-3 right-3 z-50">
         <button
           onClick={() => navigate("/app/challenges")}
@@ -86,17 +83,14 @@ export default function App_nav({ onOpenAddTopic }) {
         </button>
       </div>
 
-      {/* 💻 DESKTOP NAV */}
-      <div className="hidden sm:grid fixed top-0 left-0 w-full z-50 grid-cols-[auto_1fr_auto] dark:bg-zinc-900/30 border-b border-gray-200 dark:border-zinc-800 backdrop-blur-2xl h-20 rounded-b-2xl px-4 lg:px-6 py-3 items-center shadow-sm gap-4">
-        {/* LEFT */}
-        <div className="flex items-center justify-self-start min-w-fit">
+      <div className="hidden sm:flex fixed top-0 left-0 w-full z-50 dark:bg-zinc-900/30 border-b border-gray-200 dark:border-zinc-800 backdrop-blur-2xl h-20 rounded-b-2xl px-4 lg:px-6 py-3 items-center justify-between shadow-sm">
+        <div className="flex items-center min-w-fit z-10">
           <h1 className="text-lg lg:text-xl font-garamound font-bold text-black dark:text-white whitespace-nowrap">
             ProStriver
           </h1>
         </div>
 
-        {/* CENTER */}
-        <div className="flex font-garamound items-center gap-2 lg:gap-4 justify-center flex-wrap">
+        <div className="absolute left-1/2 -translate-x-1/2 flex font-garamound items-center gap-2 lg:gap-4">
           {navItems.map((item) => {
             const active = location.pathname === item.path;
 
@@ -116,9 +110,7 @@ export default function App_nav({ onOpenAddTopic }) {
           })}
         </div>
 
-        {/* RIGHT */}
-        <div className="flex items-center gap-2 lg:gap-3 justify-self-end min-w-fit">
-          {/* ✅ CHALLENGE BEFORE DARK MODE */}
+        <div className="flex items-center gap-2 lg:gap-3 min-w-fit z-10">
           <button
             onClick={() => navigate("/app/challenges")}
             className="cursor-pointer hidden lg:block min-w-[170px]"
@@ -160,7 +152,6 @@ export default function App_nav({ onOpenAddTopic }) {
         </div>
       </div>
 
-      {/* ➕ FLOATING BUTTON */}
       <div className="sm:hidden fixed bottom-[10px] left-1/2 -translate-x-1/2 z-50">
         <button
           onClick={onOpenAddTopic}
@@ -170,8 +161,7 @@ export default function App_nav({ onOpenAddTopic }) {
         </button>
       </div>
 
-      {/* 📱 BOTTOM NAV */}
-      <div className="sm:hidden fixed bottom-0 left-0 w-full z-40 bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-800 flex justify-evenly gap-20 items-center py-3 shadow-lg">
+      <div className="sm:hidden fixed bottom-0  left-0 w-full z-40 bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-800 flex justify-evenly gap-20 items-center py-3 shadow-lg">
         <div className="flex gap-8">
           {navItems.slice(0, 2).map((item) => {
             const active = location.pathname === item.path;
