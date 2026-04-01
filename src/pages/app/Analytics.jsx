@@ -7,19 +7,13 @@ import {
   Flame,
   Percent,
   Calendar,
-  Trophy,
-  Target,
-  TimerReset,
+  Rocket,
 } from "lucide-react";
 
 export default function Analytics() {
   const [analytics, setAnalytics] = useState(null);
   const [revisions, setRevisions] = useState([]);
-
-  // ✅ staggered animation states
   const [performanceIn, setPerformanceIn] = useState(false);
-  const [challengeIn, setChallengeIn] = useState(false);
-  const [timelineIn, setTimelineIn] = useState(false);
 
   const loadAnalytics = async () => {
     try {
@@ -40,143 +34,112 @@ export default function Analytics() {
     loadAnalytics();
 
     const timer1 = setTimeout(() => setPerformanceIn(true), 120);
-    const timer2 = setTimeout(() => setChallengeIn(true), 320);
-    const timer3 = setTimeout(() => setTimelineIn(true), 520);
 
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-    };
+    return () => clearTimeout(timer1);
   }, []);
 
   const revisionRate = Math.round((analytics?.revision?.rateMtd ?? 0) * 100);
 
-  const challengeProgress = Math.round(
-    analytics?.challenge?.progressPercent ?? 0,
-  );
-
-  const challengeCompletion = Math.round(
-    (analytics?.challenge?.completionRate ?? 0) * 100,
-  );
+  const hasAnalyticsData =
+    (analytics?.revision?.completedMtd ?? 0) > 0 ||
+    (analytics?.revision?.missedMtd ?? 0) > 0 ||
+    revisions.length > 0 ||
+    (analytics?.challenge?.currentStreak ?? 0) > 0;
 
   return (
     <div className="p-3 sm:p-6 min-h-screen bg-gray-200 dark:bg-[#0F172A] text-black dark:text-white">
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 auto-rows-auto">
-        {/* PERFORMANCE */}
+      <div className="grid grid-cols-1 w-full xl:grid-cols-1 gap-4 auto-rows-auto">
         <div
-          className={`rounded-3xl bg-white dark:bg-[#1E293B] p-5 sm:p-6 shadow-sm transition-all duration-700 ${
+          className={`relative rounded-3xl bg-white dark:bg-[#1E293B] p-5 sm:p-6 shadow-sm transition-all duration-700 ${
             performanceIn
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-3"
           }`}
         >
-          <h1 className="text-2xl sm:text-3xl font-bold font-averaiserif mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold font-averaiserif mb-2">
             Your Performance
           </h1>
 
-          <div className="grid grid-cols-2 lg:grid-cols-2 gap-4">
-            <Stat
-              label="Completed"
-              value={analytics?.revision?.completedMtd}
-              icon={<CheckCircle size={18} />}
-            />
-            <Stat
-              label="Missed"
-              value={analytics?.revision?.missedMtd}
-              icon={<XCircle size={18} />}
-            />
-            <Stat
-              label="Pending"
-              value={revisions.length}
-              icon={<Calendar size={18} />}
-            />
-            <Stat
-              label="Revision Rate"
-              value={`${revisionRate}%`}
-              icon={<Percent size={18} />}
-            />
-            <div className="col-span-2">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            Monthly revision insights based on completed, missed and pending
+            reviews
+          </p>
+
+          {/* analytics stays visible */}
+          <div
+            className={`transition-all duration-500 ${
+              !hasAnalyticsData ? "blur-md select-none" : ""
+            }`}
+          >
+            <div className="grid grid-cols-2 lg:grid-cols-2 gap-4">
+              <Stat
+                label="Completed This Month"
+                value={analytics?.revision?.completedMtd}
+                icon={<CheckCircle size={18} />}
+              />
+              <Stat
+                label="Missed This Month"
+                value={analytics?.revision?.missedMtd}
+                icon={<XCircle size={18} />}
+              />
+              <Stat
+                label="Pending Today"
+                value={revisions.length}
+                icon={<Calendar size={18} />}
+              />
               <Stat
                 label="Current Streak"
                 value={analytics?.challenge?.currentStreak}
                 icon={<Flame size={18} />}
               />
             </div>
-          </div>
-        </div>
 
-        {/* CHALLENGE PERFORMANCE */}
-        <div
-          className={`rounded-3xl bg-white dark:bg-[#1E293B] p-5 sm:p-6 shadow-sm transition-all duration-700 ${
-            challengeIn
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-3"
-          }`}
-        >
-          <div className="flex items-center gap-2 mb-6">
-            <Trophy size={18} />
-            <h2 className="text-2xl font-bold font-averaiserif">
-              Challenge Performance
-            </h2>
-          </div>
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                  <Percent size={16} />
+                  <span>Revision Success Rate</span>
+                </div>
+                <span className="font-semibold">{revisionRate}%</span>
+              </div>
 
-          <div className="flex flex-col lg:flex-row gap-6 items-center">
-            <ProgressRing progress={challengeProgress} />
+              <div className="mt-8 flex flex-col items-center justify-center rounded-2xl bg-gray-100 dark:bg-[#0F172A] p-6">
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  <Percent size={16} />
+                  <span>Revision Success Rate</span>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4 w-full">
-              <MiniStat
-                label="Completion"
-                value={`${challengeCompletion}%`}
-                icon={<Percent size={16} />}
-              />
-              <MiniStat
-                label="Freeze Left"
-                value={analytics?.challenge?.freezeRemaining || 0}
-                icon={<TimerReset size={16} />}
-              />
-              <MiniStat
-                label="Completed Days"
-                value={analytics?.challenge?.qualifiedDays || 0}
-                icon={<Calendar size={16} />}
-              />
-              <MiniStat
-                label="Progress"
-                value={`${challengeProgress}%`}
-                icon={<Target size={16} />}
-              />
+                <ProgressRing progress={revisionRate} />
+
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
+                  Based on completed vs missed revisions this month
+                </p>
+              </div>
+
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                Based on completed vs missed revisions this month
+              </p>
             </div>
           </div>
-        </div>
 
-        {/* TIMELINE */}
-        <div
-          className={`xl:col-span-2 rounded-3xl bg-white dark:bg-[#1E293B] p-5 sm:p-6 shadow-sm transition-all duration-700 ${
-            timelineIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
-          }`}
-        >
-          <h2 className="text-2xl font-bold font-averaiserif mb-6">
-            Challenge Timeline
-          </h2>
+          {/* better honest empty state */}
+          {!hasAnalyticsData && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 px-6">
+              <div className="mb-5 w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-400/10 flex items-center justify-center">
+                <Rocket size={34} className="text-amber-500" />
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <TimelineRow
-              label="Type"
-              value={analytics?.challenge?.type || "—"}
-            />
-            <TimelineRow
-              label="Duration"
-              value={`${analytics?.challenge?.durationDays || 0} days`}
-            />
-            <TimelineRow
-              label="Start"
-              value={analytics?.challenge?.startDate || "—"}
-            />
-            <TimelineRow
-              label="End"
-              value={analytics?.challenge?.endDate || "—"}
-            />
-          </div>
+              <h2 className="text-2xl sm:text-3xl font-bold font-averaiserif mb-3 text-center">
+                Your analytics will appear here
+              </h2>
+
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 text-center max-w-lg leading-relaxed">
+                Once you start making progress in your challenge, your streaks,
+                revision success rate, completed reviews, and learning insights
+                will begin to appear here automatically.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -227,32 +190,11 @@ function ProgressRing({ progress }) {
 function Stat({ icon, label, value }) {
   return (
     <div className="p-5 rounded-2xl bg-gray-100 dark:bg-[#0F172A] shadow-sm">
-      <div className="flex items-center gap-2 text-gray-500 mb-2">
+      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-2">
         {icon}
         <p className="text-sm">{label}</p>
       </div>
       <h2 className="text-3xl font-bold font-averaiserif">{value || 0}</h2>
-    </div>
-  );
-}
-
-function MiniStat({ icon, label, value }) {
-  return (
-    <div className="p-4 rounded-2xl bg-gray-100 dark:bg-[#0F172A] shadow-sm">
-      <div className="flex items-center gap-2 text-gray-500 mb-2">
-        {icon}
-        <p className="text-sm">{label}</p>
-      </div>
-      <h3 className="text-2xl font-bold font-averaiserif">{value}</h3>
-    </div>
-  );
-}
-
-function TimelineRow({ label, value }) {
-  return (
-    <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-100 dark:bg-[#0F172A] shadow-sm">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="font-semibold font-averaiserif">{value}</p>
     </div>
   );
 }

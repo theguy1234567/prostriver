@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiFetch } from "../../utils/apiFetch";
 import toast from "react-hot-toast";
+import { Mail, User, Lock, KeyRound } from "lucide-react";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -18,9 +19,6 @@ export default function Signup() {
 
   const [otp, setOtp] = useState("");
 
-  // ============================
-  // STEP 1 → EMAIL VALIDATION ONLY
-  // ============================
   const handleEmailNext = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -37,9 +35,6 @@ export default function Signup() {
     setStep(2);
   };
 
-  // ============================
-  // STEP 2 → PASSWORD + SIGNUP
-  // ============================
   const handleSignup = async () => {
     if (!user.fullname || !user.password || !user.confirmPassword) {
       toast.error("All fields are required");
@@ -81,9 +76,6 @@ export default function Signup() {
     }
   };
 
-  // ============================
-  // STEP 3 → OTP VERIFY
-  // ============================
   const handleOtp = async () => {
     try {
       setLoading(true);
@@ -124,63 +116,122 @@ export default function Signup() {
   };
 
   return (
-    <div className="bg-sky-100 min-h-screen flex justify-center items-center px-4 py-6">
-      <div className="bg-red-100 w-full max-w-6xl min-h-[85vh] rounded-2xl p-4 flex flex-col md:flex-row gap-4">
-        {/* LEFT FORM */}
-        <div className="bg-sky-400/50 rounded-3xl md:rounded-4xl w-full md:w-[60%] flex items-center justify-center overflow-hidden px-4 sm:px-6 py-6 sm:py-8">
-          <div className="w-full overflow-hidden">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 flex items-center justify-center px-4 py-6">
+      <div className="w-full max-w-6xl rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden grid md:grid-cols-2">
+        {/* Left Branding Panel */}
+        <div className="hidden md:flex flex-col justify-center px-10 lg:px-16 py-12 border-r border-zinc-200 dark:border-zinc-800 bg-amber-300 dark:bg-zinc-900">
+          <p className="text-sm uppercase tracking-[0.25em] text-zinc-600 dark:text-zinc-400 mb-4">
+            ProStriver
+          </p>
+
+          <h1 className="text-5xl lg:text-6xl font-garamound leading-tight text-zinc-900 dark:text-white">
+            Signup to <i>pro</i>striver
+          </h1>
+
+          <p className="mt-6 text-zinc-700 dark:text-zinc-400 text-lg leading-8">
+            Start your journey of revision streaks, challenge tracking, and
+            consistent learning discipline.
+          </p>
+
+          <div className="mt-10">
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              Already have an account?
+            </p>
+            <Link
+              to="/login"
+              className="mt-2 inline-block text-zinc-900 dark:text-white font-medium hover:underline"
+            >
+              Login now →
+            </Link>
+          </div>
+        </div>
+
+        {/* Right Signup Form */}
+        <div className="flex items-center justify-center px-6 sm:px-10 py-10 overflow-hidden">
+          <div className="w-full max-w-md overflow-hidden">
+            <h1 className="text-4xl font-garamound text-zinc-900 dark:text-white md:hidden">
+              Create Account
+            </h1>
+
+            <p className="text-zinc-500 dark:text-zinc-400 mt-2 mb-8">
+              Build your learning system with ProStriver.
+            </p>
+
             <div
-              className="flex w-full transition-transform duration-500 ease-in-out"
+              className="flex transition-transform duration-500 ease-in-out"
               style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
             >
-              {/* STEP 1 */}
-              <div className="min-w-full flex flex-col items-center justify-center font-averaiserif">
-                <h2 className="text-2xl mb-4 font-semibold">Enter Email</h2>
-
-                <input
-                  className="w-full max-w-md bg-white px-4 py-3 rounded-lg outline-none"
-                  placeholder="Email"
-                  value={user.email}
-                  onChange={(e) => setUser({ ...user, email: e.target.value })}
-                />
+              {/* Step 1 */}
+              <div className="min-w-full space-y-5">
+                <div>
+                  <label className="text-sm text-zinc-500 dark:text-zinc-400">
+                    Email
+                  </label>
+                  <div className="mt-2 relative">
+                    <Mail
+                      size={18}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Enter your email"
+                      value={user.email}
+                      onChange={(e) =>
+                        setUser({ ...user, email: e.target.value })
+                      }
+                      className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-12 pr-4 py-3 outline-none focus:border-zinc-500 text-zinc-900 dark:text-white"
+                    />
+                  </div>
+                </div>
 
                 <button
-                  className="bg-sky-400 p-3 rounded-lg px-10 mt-6 w-full max-w-md"
                   onClick={handleEmailNext}
                   disabled={loading}
+                  className="w-full rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 py-3 font-medium hover:opacity-90 transition"
                 >
                   Next
                 </button>
               </div>
 
-              {/* STEP 2 */}
-              <div className="min-w-full flex flex-col items-center justify-center font-averaiserif">
-                <h2 className="text-2xl mb-4 font-semibold">
-                  Secure Your Account
-                </h2>
-
-                <div className="w-full max-w-md space-y-4">
+              {/* Step 2 */}
+              <div className="min-w-full space-y-5 px-1">
+                <div className="relative">
+                  <User
+                    size={18}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
+                  />
                   <input
-                    className="w-full bg-white px-4 py-3 rounded-lg outline-none"
                     placeholder="Full Name"
                     value={user.fullname}
                     onChange={(e) =>
                       setUser({ ...user, fullname: e.target.value })
                     }
+                    className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-12 pr-4 py-3 outline-none"
                   />
+                </div>
 
+                <div className="relative">
+                  <Lock
+                    size={18}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
+                  />
                   <input
-                    className="w-full bg-white px-4 py-3 rounded-lg outline-none"
                     type="password"
                     placeholder="Password"
                     value={user.password}
                     onChange={(e) =>
                       setUser({ ...user, password: e.target.value })
                     }
+                    className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-12 pr-4 py-3 outline-none"
                   />
+                </div>
 
+                <div className="relative">
+                  <Lock
+                    size={18}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
+                  />
                   <input
-                    className="w-full bg-white px-4 py-3 rounded-lg outline-none"
                     type="password"
                     placeholder="Confirm Password"
                     value={user.confirmPassword}
@@ -190,72 +241,51 @@ export default function Signup() {
                         confirmPassword: e.target.value,
                       })
                     }
+                    className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-12 pr-4 py-3 outline-none"
                   />
-
-                  <button
-                    className="w-full bg-sky-400 py-3 rounded-lg"
-                    onClick={handleSignup}
-                    disabled={loading}
-                  >
-                    {loading ? "Creating..." : "Create Account"}
-                  </button>
                 </div>
+
+                <button
+                  onClick={handleSignup}
+                  disabled={loading}
+                  className="w-full rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 py-3 font-medium hover:opacity-90 transition"
+                >
+                  {loading ? "Creating..." : "Create Account"}
+                </button>
               </div>
 
-              {/* STEP 3 */}
-              <div className="min-w-full flex flex-col items-center justify-center font-averaiserif">
-                <h2 className="text-2xl mb-4 font-semibold">Verify OTP</h2>
-
-                <div className="w-full max-w-md space-y-4">
-                  <input
-                    className="w-full bg-white px-4 py-3 rounded-lg outline-none"
-                    value={user.email}
-                    disabled
+              {/* Step 3 */}
+              <div className="min-w-full space-y-5 px-1">
+                <div className="relative">
+                  <KeyRound
+                    size={18}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
                   />
-
                   <input
-                    className="w-full bg-white px-4 py-3 rounded-lg outline-none"
                     placeholder="Enter OTP"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
+                    className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-12 pr-4 py-3 outline-none"
                   />
-
-                  <button
-                    className="w-full bg-sky-400 py-3 rounded-lg"
-                    onClick={handleOtp}
-                    disabled={loading}
-                  >
-                    {loading ? "Verifying..." : "Verify OTP"}
-                  </button>
-
-                  <button
-                    onClick={handleResendOtp}
-                    className="text-blue-600 underline mt-2 w-full"
-                  >
-                    Resend OTP
-                  </button>
                 </div>
+
+                <button
+                  onClick={handleOtp}
+                  disabled={loading}
+                  className="w-full rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 py-3 font-medium hover:opacity-90 transition"
+                >
+                  {loading ? "Verifying..." : "Verify OTP"}
+                </button>
+
+                <button
+                  onClick={handleResendOtp}
+                  className="w-full text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                >
+                  Resend OTP
+                </button>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* RIGHT PANEL */}
-        <div className="bg-[#D7CDCC] rounded-3xl w-full md:w-[40%] flex flex-col items-center justify-center p-6 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-averaiserif leading-tight">
-            Welcome to <i className="font-garamound">pro</i>strive
-          </h1>
-
-          <p className="mt-5 font-averaiserif text-sm sm:text-base">
-            Already have an account?
-          </p>
-
-          <Link
-            to="/login"
-            className="text-blue-600 underline mt-2 font-averaiserif"
-          >
-            Login
-          </Link>
         </div>
       </div>
     </div>

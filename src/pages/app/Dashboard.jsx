@@ -5,8 +5,8 @@ import { useAnalytics } from "../../context/AnalyticsContext";
 import toast from "react-hot-toast";
 import { apiFetch } from "../../utils/apiFetch";
 import { useNavigate } from "react-router-dom";
-
 import { Plus, Flame, Calendar, BookOpen } from "lucide-react";
+import ConfirmModal from "../../components/app_components/common/ConfirmModal";
 
 export default function Dashboard() {
   const { dark } = useContext(ThemeContext);
@@ -19,14 +19,14 @@ export default function Dashboard() {
   const [showModal, setShowModal] = useState(false);
   const [revisionLength, setRevisionLength] = useState(0);
   const [editingTopic, setEditingTopic] = useState(null);
-
-  // ✅ staggered animation states
+  const [hoveredDay, setHoveredDay] = useState(null);
   const [heroIn, setHeroIn] = useState(false);
   const [revisionIn, setRevisionIn] = useState(false);
   const [topicsIn, setTopicsIn] = useState(false);
-
   const [expandedTopicId, setExpandedTopicId] = useState(null);
   const [revisionPlanDetails, setRevisionPlanDetails] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState(null);
 
   const { analytics, setAnalytics } = useAnalytics();
 
@@ -50,69 +50,57 @@ export default function Dashboard() {
     const today = new Date();
     const currentDay = today.getDay();
     const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
-
     const monday = new Date(today);
     monday.setDate(today.getDate() + mondayOffset);
 
     const week = [];
-
     for (let i = 0; i < 7; i++) {
       const d = new Date(monday);
       d.setDate(monday.getDate() + i);
-
       week.push({
         date: formatLocalDate(d),
         label: d.toLocaleDateString("en-US", { weekday: "short" }),
       });
     }
-
     return week;
   };
 
   const loadTopicsData = async () => {
     try {
       const today = formatLocalDate(new Date());
-
       const topicsPage = await apiFetch(
         "/api/topics?page=0&size=50&sort=createdAt,desc",
       );
-
       const allTopics = topicsPage.content || [];
 
       const todayOnlyTopics = allTopics.filter((t) => {
         if (!t.createdAt) return false;
-
         const topicDate = new Date(
           typeof t.createdAt === "string"
             ? t.createdAt.replace(" ", "T")
             : t.createdAt,
         );
-
         return formatLocalDate(topicDate) === today;
       });
 
       setTodayTopics(todayOnlyTopics);
 
       const days = getCurrentWeekMondayFirst();
-
       const weekDataFormatted = days.map((day) => ({
         count: allTopics.filter((t) => {
           if (!t.createdAt) return false;
-
           const topicDate = new Date(
             typeof t.createdAt === "string"
               ? t.createdAt.replace(" ", "T")
               : t.createdAt,
           );
-
           return formatLocalDate(topicDate) === day.date;
         }).length,
         label: day.label,
       }));
 
       setWeekData(weekDataFormatted);
-    } catch (err) {
-      console.log("Topics error:", err);
+    } catch {
       setTodayTopics([]);
       setWeekData([]);
     }
@@ -139,19 +127,38 @@ export default function Dashboard() {
       });
 
       await loadTopicsData();
-    } catch (err) {
-      console.error("Dashboard error:", err);
+    } catch {
       toast.error("Failed to load dashboard");
+    }
+  };
+  const handleDeleteTopic = async () => {
+    if (!selectedTopic) return;
+
+    try {
+      await apiFetch(`/api/topics/${selectedTopic.id}`, {
+        method: "DELETE",
+      });
+
+      toast.success("Topic deleted");
+      setShowDeleteConfirm(false);
+      setSelectedTopic(null);
+
+      if (expandedTopicId === selectedTopic.id) {
+        setExpandedTopicId(null);
+        setRevisionPlanDetails(null);
+      }
+
+      await loadDashboard();
+    } catch {
+      toast.error("Failed to delete topic");
     }
   };
 
   useEffect(() => {
     loadDashboard();
-
     const timer1 = setTimeout(() => setHeroIn(true), 120);
     const timer2 = setTimeout(() => setRevisionIn(true), 320);
     const timer3 = setTimeout(() => setTopicsIn(true), 520);
-
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
@@ -165,147 +172,148 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="p-3 sm:p-6 min-h-screen rounded-2xl bg-gray-200 dark:bg-[#0F172A] text-black dark:text-white space-y-4 sm:space-y-6">
-      {/* HERO */}
+    <div className="min-h-screen w-full rounded-2xl bg-gray-200 dark:bg-[#0F172A] text-black dark:text-white p-3 sm:p-5 lg:p-6 xl:p-8 space-y-4 sm:space-y-6  mx-auto">
       <div
-        className={`p-4 sm:p-6 rounded-3xl bg-white dark:bg-[#1E293B] space-y-5 transition-all duration-700 ${
-          heroIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
-        }`}
+        className={`p-4 sm:p-6 lg:p-8 rounded-3xl bg-white dark:bg-[#1E293B] space-y-5 transition-all duration-700 ${heroIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}
       >
-        <div className="flex flex-row justify-between rounded-full">
-          <div className="flex flex-col sm:flex-col sm:justify-between gap-3">
-            <h1 className="text-3xl sm:text-5xl font-averaiserif font-bold">
-              Hey {user?.fullName || "User"} 👋
-            </h1>
-            <p className="font-averaiserif">Welcome to Prostriver!</p>
-            <p className="font-averaiserif">what do you want to learn today?</p>
-          </div>
+        <div className="flex flex-col gap-3">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-averaiserif font-bold leading-tight">
+            Hey {user?.fullName || "User"} 👋
+          </h1>
+          <p className="font-averaiserif text-sm sm:text-base">
+            Welcome to Prostriver!
+          </p>
+          <p className="font-averaiserif text-sm sm:text-base">
+            What do you want to learn today?
+          </p>
+        </div>
 
-          <div className="flex gap-2">
-            <div className="rounded-full bg-amber-300 dark:bg-[#1E293B] p-4 flex flex-col h-30 w-30 items-center justify-center shrink-0">
-              <Flame size={28} />
-              <h2 className="text-3xl text-center font-averaiserif font-bold">
+        <div className="rounded-2xl relative bg-gray-100 dark:bg-[#0F172A] p-4 sm:p-5">
+          <div className="absolute top-3 right-3 sm:right-5">
+            <div className="rounded-full bg-amber-300 text-black px-3 sm:px-4 h-10 flex items-center gap-2 justify-center shrink-0">
+              <Flame size={22} />
+              <h2 className="text-xl sm:text-2xl font-averaiserif font-bold">
                 {analytics?.challenge?.currentStreak || 0}
               </h2>
             </div>
+          </div>
 
-            <div className="rounded-full bg-amber-300 dark:bg-[#1E293B] p-4 flex flex-col h-30 w-30 items-center justify-center shrink-0">
-              <Calendar size={28} />
-              <h2 className="text-3xl text-center font-averaiserif font-bold">
-                {revisions.length}
-              </h2>
+          <div className="pr-20 sm:pr-24">
+            <p className="text-sm text-gray-500 font-averaiserif">
+              Challenge Progress
+            </p>
+            <h3 className="text-2xl font-bold font-averaiserif">{progress}%</h3>
+            <div className="w-full h-4 rounded-full bg-gray-300 dark:bg-[#1E293B] overflow-hidden mt-3">
+              <div
+                className="h-full rounded-full bg-amber-300"
+                style={{ width: `${progress}%` }}
+              />
             </div>
           </div>
-        </div>
 
-        <div className="rounded-2xl bg-gray-100 dark:bg-[#0F172A] p-5">
-          <p className="text-sm text-gray-500">Challenge Progress</p>
-          <h3 className="text-2xl font-bold">{progress}%</h3>
-          <div className="w-full h-4 rounded-full bg-gray-300 dark:bg-[#1E293B] overflow-hidden mt-3">
-            <div
-              className="h-full rounded-full bg-amber-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-
-          <div className="flex items-start justify-between gap-4 mt-4">
-            <div className="flex-1">
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">
-                Weekly Activity
-              </h3>
-
-              <div className="grid grid-cols-7 gap-2">
-                {(weekData.length
-                  ? weekData
-                  : Array(7).fill({ count: 0, label: "" })
-                ).map((day, index) => (
-                  <div key={index} className="flex flex-col items-center">
-                    <div
-                      className="w-full h-6 rounded-md"
-                      style={{ backgroundColor: getColor(day.count) }}
-                    />
-                    <p className="text-[10px] mt-1 text-gray-500">
-                      {day.label}
-                    </p>
+          <div className="mt-5">
+            <h3 className="text-sm font-semibold text-gray-500 mb-2 font-averaiserif">
+              Weekly Activity
+            </h3>
+            <div className="grid grid-cols-7 gap-1 sm:gap-2">
+              {(weekData.length
+                ? weekData
+                : Array(7).fill({ count: 0, label: "" })
+              ).map((day, index) => (
+                <div
+                  key={index}
+                  onMouseEnter={() => setHoveredDay(index)}
+                  onMouseLeave={() => setHoveredDay(null)}
+                  className="flex flex-col items-center min-w-0"
+                >
+                  <div
+                    className={`text-[10px] sm:text-xs font-averaiserif h-5 mb-1 transition-all duration-300 text-center ${hoveredDay === index ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"}`}
+                  >
+                    {`Topics: ${day.count}`}
                   </div>
-                ))}
-              </div>
+                  <div
+                    className={`w-full h-4 sm:h-5 rounded-full cursor-pointer transition-all duration-300 ${hoveredDay === index ? "-translate-y-1 shadow-md" : ""}`}
+                    style={{ backgroundColor: getColor(day.count) }}
+                  />
+                  <p className="text-[10px] mt-1 text-gray-500 font-averaiserif">
+                    {day.label}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
-      {/* TODAY REVISIONS */}
       <div
-        className={`p-4 rounded-2xl bg-white dark:bg-[#1E293B] transition-all duration-700 ${
-          revisionIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
-        }`}
+        className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#1E293B] transition-all duration-700 ${revisionIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}
       >
-        <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-          <Calendar size={18} />
-          Today's Revisions ({revisionLength})
+        <h2 className="text-lg sm:text-xl font-averaiserif font-semibold mb-3 flex items-center gap-2">
+          <Calendar size={18} /> Today's Revisions ({revisionLength})
         </h2>
 
         {revisions.length > 0 ? (
           revisions.map((r) => (
             <div
               key={r.revisionScheduleId}
-              className="p-3 mb-2 rounded-lg bg-gray-100 dark:bg-[#0F172A] flex justify-between items-center"
+              className="p-3 mb-2 rounded-lg bg-gray-100 dark:bg-[#0F172A] flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3"
             >
-              <div>
-                <p className="font-semibold">{r.title}</p>
-                <p className="text-xs text-gray-500">
+              <div className="min-w-0">
+                <p className="font-semibold font-averaiserif truncate">
+                  {r.title}
+                </p>
+                <p className="text-xs text-gray-500 font-averaiserif">
                   {r.subject} • Day {r.dayNumber}
                 </p>
               </div>
               <button
                 onClick={() => navigate("/app/revisions")}
-                className="px-3 py-1.5 rounded-full bg-amber-300 text-sm"
+                className="px-3 py-1.5 rounded-full bg-amber-300 text-sm w-full sm:w-auto"
               >
                 Go
               </button>
             </div>
           ))
         ) : (
-          <p>No revisions today</p>
+          <p className="font-averaiserif">No revisions today</p>
         )}
       </div>
 
-      {/* TODAY Learnings */}
       <div
-        className={`p-4 relative rounded-2xl bg-white dark:bg-[#1E293B] transition-all duration-700 ${
-          topicsIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
-        }`}
+        className={`p-4 sm:p-5 relative rounded-2xl bg-white dark:bg-[#1E293B] transition-all duration-700 ${topicsIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}
       >
-        <div>
-          <h2 className="text-2xl font-averaiserif mb-3 flex items-center gap-2">
-            <BookOpen size={18} />
-            Today’s Learnings ({todayTopics.length})
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+          <h2 className="text-xl sm:text-2xl font-averaiserif flex items-center gap-2">
+            <BookOpen size={18} /> Today’s Learnings ({todayTopics.length})
           </h2>
           <button
             onClick={() => {
               setEditingTopic(null);
               setShowModal(true);
             }}
-            className="hidden sm:flex absolute top-2 right-3 items-center gap-2 bg-amber-300 px-4 py-2 rounded-full shadow"
+            className="flex items-center justify-center gap-2 bg-amber-300 text-black px-4 py-2 rounded-full shadow font-averaiserif font-bold w-full sm:w-auto"
           >
-            <Plus size={16} />
-            Add Topic
+            <Plus size={16} /> Add Topic
           </button>
         </div>
+
         {todayTopics.length > 0 ? (
           todayTopics.map((t) => (
             <div
               key={t.id}
               className="p-4 mb-3 rounded-2xl bg-gray-100 dark:bg-[#0F172A]"
             >
-              <div className="flex justify-between items-start gap-3">
-                <div>
-                  <p className="font-semibold">{t.title}</p>
-                  <p className="text-xs text-gray-500">{t.subject}</p>
+              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+                <div className="min-w-0">
+                  <p className="font-semibold font-averaiserif break-words">
+                    {t.title}
+                  </p>
+                  <p className="text-xs text-gray-500 font-averaiserif">
+                    {t.subject}
+                  </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => {
                       setEditingTopic(t);
@@ -315,55 +323,51 @@ export default function Dashboard() {
                   >
                     Edit
                   </button>
-
                   <button
-                    onClick={async () => {
-                      if (!window.confirm("Delete this topic permanently?"))
-                        return;
-
-                      try {
-                        await apiFetch(`/api/topics/${t.id}`, {
-                          method: "DELETE",
-                        });
-
-                        toast.success("Topic deleted");
-                        loadDashboard();
-                      } catch (err) {
-                        toast.error("Failed to delete topic");
-                      }
+                    onClick={() => {
+                      setSelectedTopic(t);
+                      setShowDeleteConfirm(true);
                     }}
                     className="px-3 py-1 rounded-full text-xs bg-red-500 text-white"
                   >
                     Delete
                   </button>
-
                   <button
                     onClick={async () => {
                       setExpandedTopicId(t.id);
 
-                      if (t.revisionPlanId) {
+                      const planId =
+                        t.revisionPlanId || t.planId || t.revisionPlan?.id;
+
+                      if (planId) {
                         try {
                           const plan = await apiFetch(
-                            `/api/admin/revision-plans/${t.revisionPlanId}`,
+                            `/api/topics/revisions/get-by-id/${planId}`,
                           );
                           setRevisionPlanDetails(plan);
                         } catch {
                           setRevisionPlanDetails(null);
                         }
                       } else {
-                        setRevisionPlanDetails(null);
+                        setRevisionPlanDetails({
+                          revisionDaysPattern:
+                            t.manualReminderPattern ||
+                            t.customRevisionDays ||
+                            t.revisionDaysPattern ||
+                            "Custom plan",
+                        });
                       }
                     }}
-                    className="w-8 h-8 rounded-full bg-white dark:bg-[#1E293B] flex items-center justify-center"
+                    className="px-3 py-1 rounded-full text-xs bg-white dark:bg-[#1E293B] font-averaiserif"
                   >
-                    ⋯
+                    view more
                   </button>
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <p>No topics added today</p>
+          <p className="font-averaiserif">No topics added today</p>
         )}
       </div>
 
@@ -375,10 +379,10 @@ export default function Dashboard() {
         />
       )}
       {expandedTopicId && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="w-[90%] max-w-md rounded-3xl bg-white dark:bg-[#1E293B] p-6 shadow-xl">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-[#1E293B] p-6 shadow-xl">
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-2xl font-averaiserif font-bold">
+              <h2 className="text-3xl font-averaiserif font-bold">
                 Topic Details
               </h2>
 
@@ -395,6 +399,7 @@ export default function Dashboard() {
 
             {(() => {
               const topic = todayTopics.find((x) => x.id === expandedTopicId);
+
               if (!topic) return <p>Topic not found</p>;
 
               return (
@@ -416,22 +421,30 @@ export default function Dashboard() {
                     </div>
                   )}
 
-                  {revisionPlanDetails && (
-                    <div>
-                      <p className="text-xs text-gray-500">Revision Plan</p>
-                      <p>{revisionPlanDetails.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {revisionPlanDetails.revisionDaysPattern}
-                      </p>
-                    </div>
-                  )}
+                  <div className="rounded-2xl bg-gray-100 dark:bg-[#0F172A] p-4">
+                    <p className="text-xs text-gray-500 mb-2">Revision Plan</p>
+                    <p className="text-sm text-amber-400">
+                      {revisionPlanDetails?.revisionDaysPattern ||
+                        "Not available"}
+                    </p>
+                  </div>
                 </div>
               );
             })()}
           </div>
         </div>
       )}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        title="Delete Topic?"
+        message="This topic will be permanently deleted."
+        confirmText="Delete"
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setSelectedTopic(null);
+        }}
+        onConfirm={handleDeleteTopic}
+      />
     </div>
   );
 }
-// 

@@ -3,11 +3,13 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ThemeContext } from "../../context/ThemeContext";
 import { AuthContext } from "../../context/AuthContext";
 import { apiFetch } from "../../utils/apiFetch";
+import logo from "../../assets/logo.jpg";
 
 import {
   Home,
-  Brain,
-  Zap,
+  RefreshCcw,
+  BarChart3,
+  Trophy,
   Sun,
   Moon,
   Plus,
@@ -24,20 +26,31 @@ export default function App_nav({ onOpenAddTopic }) {
   const { setAccessToken, user } = useContext(AuthContext);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+
+  // ✅ fixed: separate refs for mobile + desktop
+  const mobileDropdownRef = useRef(null);
+  const desktopDropdownRef = useRef(null);
 
   const firstLetter = user?.fullName?.charAt(0)?.toUpperCase() || "U";
 
   const navItems = [
     { name: "Dashboard", path: "/app", icon: Home },
-    { name: "Revisions", path: "/app/revisions", icon: Brain },
-    { name: "Analytics", path: "/app/analytics", icon: Brain },
-    { name: "Challenges", path: "/app/challenges", icon: Zap },
+    { name: "Revisions", path: "/app/revisions", icon: RefreshCcw },
+    { name: "Analytics", path: "/app/analytics", icon: BarChart3 },
+    { name: "Challenges", path: "/app/challenges", icon: Trophy },
   ];
 
   useEffect(() => {
     function handleClickOutside(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      const clickedInsideMobile =
+        mobileDropdownRef.current &&
+        mobileDropdownRef.current.contains(e.target);
+
+      const clickedInsideDesktop =
+        desktopDropdownRef.current &&
+        desktopDropdownRef.current.contains(e.target);
+
+      if (!clickedInsideMobile && !clickedInsideDesktop) {
         setDropdownOpen(false);
       }
     }
@@ -62,25 +75,76 @@ export default function App_nav({ onOpenAddTopic }) {
 
   return (
     <>
-      {/* mobile theme */}
-      <div className="sm:hidden fixed top-2 left-3 z-10">
+      {/* mobile top controls */}
+      <div
+        className="sm:hidden fixed top-2 left-0 w-full px-3 z-[120] flex justify-between items-center"
+        ref={mobileDropdownRef}
+      >
         <button
           onClick={() => setDark(!dark)}
           className="p-2 rounded-full bg-gray-100 dark:bg-[#1E293B] shadow"
         >
           {dark ? <Moon size={18} /> : <Sun size={18} />}
         </button>
+
+        <button
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+          className="w-10 h-10 rounded-full bg-amber-400 text-white font-bold flex items-center justify-center shadow-md"
+        >
+          {firstLetter}
+        </button>
+
+        {dropdownOpen && (
+          <div className="absolute top-12 right-3 w-56 rounded-2xl border dark:text-white border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl overflow-hidden z-[130]">
+            <button
+              onClick={() => {
+                navigate("/app/profile");
+                setDropdownOpen(false);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-zinc-800"
+            >
+              <UserRound size={18} />
+              Profile
+            </button>
+
+            <button
+              onClick={() => {
+                navigate("/app/change-password");
+                setDropdownOpen(false);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-zinc-800"
+            >
+              <KeyRound size={18} />
+              Change Password
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-zinc-800"
+            >
+              <LogOut size={18} />
+              Logout
+            </button>
+          </div>
+        )}
       </div>
 
       {/* desktop nav */}
       <div className="hidden sm:flex fixed top-0 left-0 w-full z-50 dark:bg-zinc-900/30 border-b border-gray-200 dark:border-zinc-800 backdrop-blur-2xl h-20 rounded-b-2xl px-4 lg:px-6 py-3 items-center justify-between shadow-sm">
-        <div className="flex items-center min-w-fit z-10">
-          <h1 className="text-lg lg:text-xl font-garamound font-bold text-black dark:text-white whitespace-nowrap">
-            ProStriver
+        <div className="flex items-center gap-3 min-w-fit z-10">
+          <div className="h-11 w-11 rounded-2xl overflow-hidden shadow-md ring-1 ring-gray-200 dark:ring-zinc-700 bg-white dark:bg-zinc-800">
+            {/* <img
+              className="h-full w-full object-cover"
+              src={logo}
+              alt="ProStriver Logo"
+            /> */}
+          </div>
+
+          <h1 className="text-xl font-averaiserif font-bold tracking-tight text-black dark:text-white">
+            <Link to={"/"}>ProStriver</Link>
           </h1>
         </div>
 
-        {/* center nav */}
         <div className="absolute left-1/2 -translate-x-1/2 flex font-garamound items-center gap-2 lg:gap-4">
           {navItems.map((item) => {
             const active = location.pathname === item.path;
@@ -101,10 +165,9 @@ export default function App_nav({ onOpenAddTopic }) {
           })}
         </div>
 
-        {/* right controls */}
         <div
           className="flex items-center gap-3 min-w-fit z-10 relative"
-          ref={dropdownRef}
+          ref={desktopDropdownRef}
         >
           <button
             onClick={() => setDark(!dark)}
@@ -113,7 +176,6 @@ export default function App_nav({ onOpenAddTopic }) {
             {dark ? <Moon size={18} /> : <Sun size={18} />}
           </button>
 
-          {/* avatar */}
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className="w-11 h-11 rounded-full bg-amber-400 text-white font-bold flex items-center justify-center shadow-md hover:scale-105 transition"
@@ -121,9 +183,8 @@ export default function App_nav({ onOpenAddTopic }) {
             {firstLetter}
           </button>
 
-          {/* dropdown */}
           {dropdownOpen && (
-            <div className="absolute top-14 right-0 w-56 rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl overflow-hidden">
+            <div className="absolute top-14 right-0 w-56 rounded-2xl border dark:text-white border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl overflow-hidden">
               <button
                 onClick={() => {
                   navigate("/app/profile");

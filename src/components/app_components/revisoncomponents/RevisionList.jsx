@@ -1,11 +1,13 @@
 // components/revisions/RevisionList.jsx
 import RevisionCard from "./RevisionCard.jsx";
+import { PartyPopper } from "lucide-react";
 
 export default function RevisionList({ revisions, refresh }) {
   if (revisions.length === 0) {
     return (
       <div className="text-center mt-10 text-gray-500">
-        🎉 No revisions for today!
+        <PartyPopper className="mx-auto mb-2" />
+        No revisions for today!
       </div>
     );
   }

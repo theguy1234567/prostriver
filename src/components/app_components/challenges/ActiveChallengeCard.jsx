@@ -13,7 +13,8 @@ export default function ActiveChallengeCard({
   todayRevisions,
   onQuit,
 }) {
-  const progress = Number(challenge.progressPercent || 0).toFixed(1);
+  const progress = Number(challenge.progressPercent || 0);
+  const formattedProgress = progress.toFixed(1);
   const completionRate = Number(challenge.completionRate || 0).toFixed(2);
 
   const hasRevisionsToday = todayRevisions.length > 0;
@@ -34,30 +35,32 @@ export default function ActiveChallengeCard({
   }
 
   return (
-    <div className="bg-white relative dark:bg-zinc-900 rounded-2xl shadow p-6 space-y-5">
-      <h2 className="text-3xl font-bold font-averaiserif flex items-center gap-2 text-zinc-900 dark:text-white">
+    <div className="bg-white relative dark:bg-zinc-900 rounded-2xl shadow p-4 sm:p-6 space-y-5 overflow-hidden">
+      {/* TITLE */}
+      <h2 className="text-2xl sm:text-3xl font-bold font-averaiserif flex items-center gap-2 text-zinc-900 dark:text-white">
         <Rocket size={20} />
         Active Challenge
       </h2>
 
-      <p className="font-averaiserif font-bold m-0 text-zinc-900 dark:text-white">
+      {/* MESSAGE */}
+      <p className="font-averaiserif font-bold text-zinc-900 dark:text-white text-sm sm:text-base">
         You are rocking it today!
       </p>
 
-      <p className="text-sm text-gray-500 dark:text-zinc-400 capitalize">
+      <p className="text-sm text-gray-500 dark:text-zinc-400 capitalize break-words">
         {formattedType}
       </p>
 
       {/* DAILY STATUS */}
       <div className="p-3 rounded-xl bg-gray-100 dark:bg-zinc-800 text-sm flex items-center gap-2 text-zinc-800 dark:text-white">
-        <MessageIcon size={16} />
-        {message}
+        <MessageIcon size={16} className="shrink-0" />
+        <span className="break-words">{message}</span>
       </div>
 
       {/* STATS */}
-      <div className="grid grid-cols-3 gap-4 text-center">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
         <div>
-          <p className="text-3xl font-averaiserif flex items-center justify-center gap-1 text-zinc-900 dark:text-white">
+          <p className="text-2xl sm:text-3xl font-averaiserif flex items-center justify-center gap-1 text-zinc-900 dark:text-white">
             <Flame size={18} />
             {challenge.currentStreak}
           </p>
@@ -65,15 +68,15 @@ export default function ActiveChallengeCard({
         </div>
 
         <div>
-          <p className="text-3xl font-averaiserif font-bold flex items-center justify-center gap-1 text-zinc-900 dark:text-white">
+          <p className="text-2xl sm:text-3xl font-averaiserif font-bold flex items-center justify-center gap-1 text-zinc-900 dark:text-white">
             <TrendingUp size={18} />
-            {progress}%
+            {formattedProgress}%
           </p>
           <p className="text-xs text-gray-500 dark:text-zinc-400">Progress</p>
         </div>
 
         <div>
-          <p className="text-3xl font-averaiserif font-bold flex items-center justify-center gap-1 text-zinc-900 dark:text-white">
+          <p className="text-2xl sm:text-3xl font-averaiserif font-bold flex items-center justify-center gap-1 text-zinc-900 dark:text-white">
             <Snowflake size={18} />
             {challenge.freezeRemaining}
           </p>
@@ -84,15 +87,15 @@ export default function ActiveChallengeCard({
       </div>
 
       {/* PROGRESS BAR */}
-      <div className="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-3">
+      <div className="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-3 overflow-hidden">
         <div
           className="bg-blue-500 h-3 rounded-full transition-all duration-500"
           style={{ width: `${progress}%` }}
-        ></div>
+        />
       </div>
 
       {/* DETAILS */}
-      <div className="text-sm text-gray-500 dark:text-zinc-400 flex justify-between">
+      <div className="text-sm text-gray-500 dark:text-zinc-400 flex flex-col sm:flex-row sm:justify-between gap-1">
         <span>
           Day {challenge.currentStreak} / {challenge.durationDays}
         </span>
@@ -100,21 +103,21 @@ export default function ActiveChallengeCard({
       </div>
 
       {/* FREEZE INFO */}
-      <div className="text-xs text-gray-400 dark:text-zinc-500">
+      <div className="text-xs text-gray-400 dark:text-zinc-500 leading-relaxed">
         You can miss {challenge.freezeRemaining} days without breaking your
         streak.
       </div>
 
       {/* DATES */}
-      <div className="text-xs text-gray-400 dark:text-zinc-500 flex justify-between">
-        <span>Start: {challenge.startDate}</span>
-        <span>End: {challenge.endDate}</span>
+      <div className="text-xs text-gray-400 dark:text-zinc-500 flex flex-col sm:flex-row sm:justify-between gap-1">
+        <span className="break-words">Start: {challenge.startDate}</span>
+        <span className="break-words">End: {challenge.endDate}</span>
       </div>
 
       {/* QUIT */}
       <button
         onClick={onQuit}
-        className="absolute top-5 right-6 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-xl"
+        className="w-full sm:w-auto sm:absolute sm:bottom-4 sm:right-4 bg-gray-500/50 hover:bg-red-600 text-white py-2 px-4 rounded-xl transition duration-300"
       >
         Quit Challenge
       </button>

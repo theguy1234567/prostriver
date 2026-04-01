@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Archive } from "lucide-react";
+import { Archive, PartyPopper } from "lucide-react";
 import RevisionList from "../../components/app_components/revisoncomponents/RevisionList";
 import { apiFetch } from "../../utils/apiFetch";
-
+import ConfirmModal from "../../components/app_components/common/ConfirmModal";
 export default function Revisions() {
   const [revisions, setRevisions] = useState([]);
   const [upcomingRevisions, setUpcomingRevisions] = useState([]);
@@ -10,9 +10,11 @@ export default function Revisions() {
   const [error, setError] = useState(null);
   const [archivingId, setArchivingId] = useState(null);
 
-  // ✅ staggered animation states
+  // staggered animation states
   const [todayIn, setTodayIn] = useState(false);
   const [upcomingIn, setUpcomingIn] = useState(false);
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+  const [selectedTopicId, setSelectedTopicId] = useState(null);
 
   const fetchRevisions = async () => {
     try {
@@ -43,21 +45,19 @@ export default function Revisions() {
     }
   };
 
-  const handleArchive = async (topicId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to archive this topic?",
-    );
-
-    if (!confirmed) return;
+  const handleArchive = async () => {
+    if (!selectedTopicId) return;
 
     try {
-      setArchivingId(topicId);
+      setArchivingId(selectedTopicId);
 
-      await apiFetch(`/api/topics/${topicId}/archive`, {
+      await apiFetch(`/api/topics/${selectedTopicId}/archive`, {
         method: "POST",
       });
 
       await fetchRevisions();
+      setShowArchiveConfirm(false);
+      setSelectedTopicId(null);
     } catch (err) {
       console.error("❌ Archive failed:", err);
       setError(err.message || "Failed to archive topic");
@@ -80,7 +80,7 @@ export default function Revisions() {
 
   return (
     <div className="p-5 space-y-8 min-h-screen text-black dark:text-white">
-      {/* TODAY */}
+      {/* TODAY
       <div
         className={`transition-all duration-700 ${
           todayIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
@@ -99,11 +99,12 @@ export default function Revisions() {
         ) : (
           !loading && (
             <p className="text-gray-500 dark:text-gray-400">
-              No revisions today 🎉
+              No revisions today
+              <PartyPopper className="inline-block ml-2 mb-1" />
             </p>
           )
         )}
-      </div>
+      </div> */}
 
       {/* UPCOMING */}
       {!loading && !error && (
@@ -141,7 +142,10 @@ export default function Revisions() {
                     </p>
 
                     <button
-                      onClick={() => handleArchive(rev.topicId)}
+                      onClick={() => {
+                        setSelectedTopicId(rev.topicId);
+                        setShowArchiveConfirm(true);
+                      }}
                       disabled={archivingId === rev.topicId}
                       className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-300 hover:bg-amber-400 transition font-medium text-black disabled:opacity-50"
                     >
@@ -154,11 +158,22 @@ export default function Revisions() {
             </div>
           ) : (
             <p className="text-gray-500 dark:text-gray-400">
-              No upcoming revisions 🎉
+              No upcoming revisions
             </p>
           )}
         </div>
       )}
+      <ConfirmModal
+        isOpen={showArchiveConfirm}
+        title="Archive Topic?"
+        message="This topic will be archived and removed from active revisions."
+        confirmText="Archive"
+        onCancel={() => {
+          setShowArchiveConfirm(false);
+          setSelectedTopicId(null);
+        }}
+        onConfirm={handleArchive}
+      />
     </div>
   );
 }

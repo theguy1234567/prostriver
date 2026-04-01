@@ -38,7 +38,7 @@ export default function AddTopicForm({
     const loadPlans = async () => {
       try {
         setPlansLoading(true);
-        const data = await apiFetch("/api/admin/revision-plans/get-all", {
+        const data = await apiFetch("/api/topics/revisions/get-all", {
           method: "GET",
         });
         setRevisionPlans(Array.isArray(data) ? data : []);

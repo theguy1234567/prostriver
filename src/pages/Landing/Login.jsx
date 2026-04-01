@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { apiFetch } from "../../utils/apiFetch";
 import toast from "react-hot-toast";
+import { Mail, Lock } from "lucide-react";
 
 export default function Login() {
   const [user, setUser] = useState({
@@ -13,6 +14,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   const { setAccessToken, setUser: setAuthUser } = useContext(AuthContext);
+
   const navigate = useNavigate();
 
   const handleSignin = async () => {
@@ -50,7 +52,6 @@ export default function Login() {
 
       localStorage.setItem("user", JSON.stringify(userData));
       setAuthUser(userData);
-
       setAccessToken(data.accessToken);
 
       toast.success("Welcome back!");
@@ -69,52 +70,116 @@ export default function Login() {
   };
 
   return (
-    <div className="bg-sky-100 min-h-screen flex justify-center items-center px-4 py-6">
-      <div className="bg-red-100 w-full max-w-6xl min-h-[85vh] rounded-2xl p-4 flex flex-col md:flex-row gap-4">
-        <div className="bg-[#D7CDCC] rounded-3xl flex flex-col p-6 items-center justify-center w-full md:w-[40%] text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-averaiserif leading-tight">
-            Login to <i className="font-garamound">pro</i>strive
+    <div className="min-h-screen bg-white dark:bg-zinc-950 flex items-center justify-center px-4 py-6">
+      <div className="w-full max-w-6xl rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden grid md:grid-cols-2">
+        {/* Left Branding Panel */}
+        <div className="hidden md:flex flex-col justify-center px-10 lg:px-16 py-12 border-r border-zinc-200 dark:border-zinc-800 bg-amber-300 dark:bg-zinc-900">
+          <p className="text-sm uppercase tracking-[0.25em] text-zinc-500 dark:text-zinc-400 mb-4">
+            ProStriver
+          </p>
+
+          <h1 className="text-5xl lg:text-6xl font-garamound leading-tight text-zinc-900 dark:text-white">
+            Login to <i>pro</i>striver
           </h1>
 
-          <h1 className="font-averaiserif mt-5 text-sm sm:text-base">
-            Don’t have an account?
-          </h1>
+          <p className="mt-6 text-zinc-500 dark:text-zinc-400 text-lg leading-8">
+            
+          </p>
 
-          <Link
-            to="/signin"
-            className="text-blue-600 underline mt-2 font-averaiserif"
-          >
-            Sign up
-          </Link>
+          <div className="mt-10">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Don’t have an account?
+            </p>
+            <Link
+              to="/signin"
+              className="mt-2 inline-block text-zinc-900 dark:text-white font-medium hover:underline"
+            >
+              Create one now →
+            </Link>
+          </div>
         </div>
 
-        <div className="bg-[#3DFAFF] rounded-3xl md:rounded-4xl w-full md:w-[60%] flex flex-col items-center justify-center px-6 sm:px-10 py-8">
+        {/* Right Login Form */}
+        <div className="flex items-center justify-center px-6 sm:px-10 py-10">
           <div className="w-full max-w-md">
-            <label className="block mb-2 font-medium">Email</label>
-            <input
-              className="w-full bg-white/70 backdrop-blur-md px-4 py-3 mb-4 rounded-lg outline-none focus:ring-2 focus:ring-sky-400 transition shadow-sm"
-              placeholder="Email"
-              type="text"
-              value={user.email}
-              onChange={(e) => setUser({ ...user, email: e.target.value })}
-            />
+            <h1 className="text-4xl font-garamound text-zinc-900 dark:text-white md:hidden">
+              Welcome Back
+            </h1>
 
-            <label className="block mb-2 font-medium">Password</label>
-            <input
-              className="w-full bg-white/70 backdrop-blur-md px-4 py-3 mb-6 rounded-lg outline-none focus:ring-2 focus:ring-sky-400 transition shadow-sm"
-              placeholder="Password"
-              type="password"
-              value={user.password}
-              onChange={(e) => setUser({ ...user, password: e.target.value })}
-            />
+            <p className="text-zinc-500 dark:text-zinc-400 mt-2 mb-8 md:mt-0">
+              Sign in to continue your ProStriver journey.
+            </p>
 
-            <button
-              onClick={handleSignin}
-              disabled={loading}
-              className="w-full bg-sky-300 hover:bg-sky-400 transition rounded-2xl px-6 py-3 shadow disabled:opacity-60"
-            >
-              {loading ? "Signing In..." : "Sign In"}
-            </button>
+            <div className="space-y-5">
+              <div>
+                <label className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Email
+                </label>
+                <div className="mt-2 relative">
+                  <Mail
+                    size={18}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={user.email}
+                    onChange={(e) =>
+                      setUser({ ...user, email: e.target.value })
+                    }
+                    className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-12 pr-4 py-3 outline-none focus:border-zinc-500 text-zinc-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Password
+                </label>
+                <div className="mt-2 relative">
+                  <Lock
+                    size={18}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
+                  />
+                  <input
+                    type="password"
+                    placeholder="Enter your password"
+                    value={user.password}
+                    onChange={(e) =>
+                      setUser({ ...user, password: e.target.value })
+                    }
+                    className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-12 pr-4 py-3 outline-none focus:border-zinc-500 text-zinc-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="text-right">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
+              <button
+                onClick={handleSignin}
+                disabled={loading}
+                className="w-full rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 py-3 font-medium hover:opacity-90 transition disabled:opacity-50"
+              >
+                {loading ? "Signing In..." : "Sign In"}
+              </button>
+
+              <p className="text-center text-sm text-zinc-500 dark:text-zinc-400 pt-2 md:hidden">
+                Don’t have an account?{" "}
+                <Link
+                  to="/signin"
+                  className="text-zinc-900 dark:text-white font-medium hover:underline"
+                >
+                  Sign up
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>

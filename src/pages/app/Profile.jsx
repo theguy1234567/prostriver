@@ -115,7 +115,7 @@ export default function ProfilePage() {
   return (
     <div className="p-4 md:p-6 space-y-6 text-zinc-900 dark:text-white">
       {/* Hero */}
-      <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 md:p-8 shadow-sm">
+      {/* <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 md:p-8 shadow-sm">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2">
@@ -137,7 +137,7 @@ export default function ProfilePage() {
             Logout
           </button>
         </div>
-      </div>
+      </div> */}
 
       {error && (
         <div className="rounded-2xl border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-300">
@@ -262,10 +262,17 @@ export default function ProfilePage() {
                 Edit Profile
               </button>
             )}
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center gap-2 self-start md:self-auto text-center   rounded-full bg-amber-300 px-6 py-3 text-zinc-900 font-garamound hover:bg-amber-400 transition"
+            >
+              <LogOut size={18} />
+              Logout
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
 }
-// 
+//

@@ -67,7 +67,7 @@ export default function ChangePassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 flex items-center justify-center px-4 py-28">
+    <div className="min-h-screen dark:text-white font-averaiserif bg-gray-50 dark:bg-zinc-950 flex items-center justify-center px-4 py-28">
       <div className="w-full max-w-xl rounded-3xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl p-8">
         <div className="flex items-center gap-3 mb-8">
           <div className="w-12 h-12 rounded-2xl bg-amber-400 flex items-center justify-center text-white">

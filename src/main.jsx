@@ -31,6 +31,8 @@ import Revisions from "./pages/app/Revisions.jsx";
 import Topics from "./pages/app/Topics.jsx";
 import Challenges from "./pages/app/Challenges.jsx";
 import ChangePassword from "./pages/app/Changepassword.jsx";
+import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
+import ResetPassword from "./pages/auth/ResetPassword.jsx";
 
 import ThemeProvider from "./context/ThemeContext";
 import Livein from "./Livein.jsx";
@@ -52,6 +54,8 @@ const router = createBrowserRouter(
         <Route path="/signin" element={<Signup />} />
       </Route>
 
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/howlong" element={<Livein />} />
       <Route path="/test" element={<App />} />
       {/* Protected (normal users) */}

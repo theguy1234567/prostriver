@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import { apiFetch } from "../../utils/apiFetch";
 import ActiveChallengeCard from "../../components/app_components/challenges/ActiveChallengeCard";
 import ChallengeCard from "../../components/app_components/challenges/ChallengeCard";
+import ConfirmModal from "../../components/app_components/common/ConfirmModal";
 
 export default function Challenges() {
   const [challenge, setChallenge] = useState(null);
   const [plans, setPlans] = useState([]);
   const [todayRevisions, setTodayRevisions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showQuitConfirm, setShowQuitConfirm] = useState(false);
 
   const getMyChallenge = async () => {
     try {
@@ -89,7 +91,13 @@ export default function Challenges() {
     }
   };
 
-  const handleQuit = async () => {
+  // ✅ opens modal only
+  const handleQuit = () => {
+    setShowQuitConfirm(true);
+  };
+
+  // ✅ actual API quit
+  const confirmQuitChallenge = async () => {
     try {
       await apiFetch("/api/challenges/me/quit", {
         method: "POST",
@@ -97,6 +105,7 @@ export default function Challenges() {
 
       setChallenge(null);
       setTodayRevisions([]);
+      setShowQuitConfirm(false);
       await getPlans();
     } catch (err) {
       console.error("Quit challenge error:", err);
@@ -113,7 +122,7 @@ export default function Challenges() {
   }
 
   return (
-    <div className="p-4 font-averaiserif sm:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 pb-32 z-0 font-averaiserif sm:p-6 max-w-7xl mx-auto space-y-6">
       <h1 className="text-2xl sm:text-6xl font-bold text-center text-zinc-900 dark:text-white">
         Lock In With a Challenge
       </h1>
@@ -128,7 +137,7 @@ export default function Challenges() {
 
       {challenge && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid sm:grid-cols-1 lg:grid-cols-4 gap-4">
             <InfoCard
               label="Challenge Type"
               value={formatChallengeType(challenge.challengeType)}
@@ -141,7 +150,7 @@ export default function Challenges() {
             <InfoCard label="Ends" value={challenge.endDate} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <InfoCard label="Freeze Allowed" value={challenge.freezeAllowed} />
             <InfoCard label="Freeze Used" value={challenge.freezeUsed} />
             <InfoCard
@@ -182,7 +191,7 @@ export default function Challenges() {
               No challenges available right now.
             </p>
           ) : (
-            <div className="grid md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-5">
               {plans.map((plan) => (
                 <ChallengeCard
                   key={plan.type}
@@ -194,6 +203,16 @@ export default function Challenges() {
           )}
         </div>
       )}
+
+      {/* ✅ Confirm Quit Modal */}
+      <ConfirmModal
+        isOpen={showQuitConfirm}
+        title="Quit Challenge?"
+        message="This will stop your current streak and challenge progress."
+        confirmText="Quit"
+        onCancel={() => setShowQuitConfirm(false)}
+        onConfirm={confirmQuitChallenge}
+      />
     </div>
   );
 }
