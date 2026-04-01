@@ -91,12 +91,12 @@ export default function Challenges() {
     }
   };
 
-  // ✅ opens modal only
+  //  opens modal only
   const handleQuit = () => {
     setShowQuitConfirm(true);
   };
 
-  // ✅ actual API quit
+  //  actual API quit
   const confirmQuitChallenge = async () => {
     try {
       await apiFetch("/api/challenges/me/quit", {
@@ -122,7 +122,7 @@ export default function Challenges() {
   }
 
   return (
-    <div className="p-4 pb-32 z-0 font-averaiserif sm:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 pb-32 bg-gray-500/20 w-full rounded-full z-0 font-averaiserif sm:p-6 max-w-7xl mx-auto space-y-6">
       <h1 className="text-2xl sm:text-6xl font-bold text-center text-zinc-900 dark:text-white">
         Lock In With a Challenge
       </h1>
@@ -204,7 +204,7 @@ export default function Challenges() {
         </div>
       )}
 
-      {/* ✅ Confirm Quit Modal */}
+      {/*  Confirm Quit Modal */}
       <ConfirmModal
         isOpen={showQuitConfirm}
         title="Quit Challenge?"
@@ -213,6 +213,10 @@ export default function Challenges() {
         onCancel={() => setShowQuitConfirm(false)}
         onConfirm={confirmQuitChallenge}
       />
+      <p className="font-garamound opacity-90 dark:text-white">
+
+      All analytics and progress will be updated @ 1:00 Am
+      </p>
     </div>
   );
 }

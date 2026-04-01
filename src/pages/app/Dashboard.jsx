@@ -206,7 +206,7 @@ export default function Dashboard() {
             <h3 className="text-2xl font-bold font-averaiserif">{progress}%</h3>
           </div>
 
-          {/* progress bar now FULL WIDTH */}
+          {/* progress bar FULL WIDTH  or else will break */}
           <div className="w-full h-4 rounded-full bg-gray-300 dark:bg-[#1E293B] overflow-hidden mt-3">
             <div
               className="h-full rounded-full bg-amber-300 transition-all duration-500"
@@ -254,6 +254,9 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+        <p className="font-garamound opacity-50 dark:text-white">
+          All analytics and progress will be updated @ 1:00 Am
+        </p>
       </div>
 
       <div

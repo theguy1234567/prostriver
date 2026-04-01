@@ -92,12 +92,12 @@ export default function ActiveChallengeCard({
       </div>
 
       {/* DETAILS */}
-      {/* <div className="text-sm text-gray-500 dark:text-zinc-400 flex flex-col sm:flex-row sm:justify-between gap-1">
+      <div className="text-sm text-gray-500 dark:text-zinc-400 flex flex-col sm:flex-row sm:justify-between gap-1">
         <span>
           Day {challenge.currentStreak} / {challenge.durationDays}
         </span>
-        <span>Rate: {completionRate}</span>
-      </div> */}
+        {/* <span>Rate: {completionRate}</span> */}
+      </div>
 
       {/* FREEZE INFO */}
       <div className="text-sm sm:text-2xl text-gray-400 dark:text-zinc-500 leading-relaxed">

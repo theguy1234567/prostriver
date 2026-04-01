@@ -13,11 +13,13 @@ export default function AddTopicForm({
   const [title, setTitle] = useState(editingTopic?.title || "");
   const [subject, setSubject] = useState(editingTopic?.subject || "");
   const [notes, setNotes] = useState(editingTopic?.notes || "");
+  const [hoveredPlan, setHoveredPlan] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const [revisionPlans, setRevisionPlans] = useState([]);
   const [selectedRevision, setSelectedRevision] = useState("none");
   const [manualPattern, setManualPattern] = useState("");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  
   const dropdownRef = useRef(null);
 
   const [loading, setLoading] = useState(false);
@@ -249,6 +251,8 @@ export default function AddTopicForm({
                       <button
                         key={plan.id}
                         type="button"
+                        onMouseEnter={() => setHoveredPlan(plan)}
+                        onMouseLeave={() => setHoveredPlan(null)}
                         onClick={() => {
                           setSelectedRevision(plan.id);
                           setManualPattern("");
@@ -256,7 +260,14 @@ export default function AddTopicForm({
                         }}
                         className="w-full px-4 py-3 text-left hover:bg-amber-50 dark:hover:bg-zinc-800 transition flex items-center justify-between"
                       >
-                        <span>{plan.name}</span>
+                        <div>
+                          <p>{plan.name}</p>
+                          {hoveredPlan?.id === plan.id && plan.description && (
+                            <p className="text-xs text-slate-500 mt-1">
+                              {plan.description}
+                            </p>
+                          )}
+                        </div>
                         {selectedRevision === plan.id && <Check size={16} />}
                       </button>
                     ))}
