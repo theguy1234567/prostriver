@@ -29,7 +29,7 @@ import Dashboard from "./pages/app/Dashboard.jsx";
 import Profile from "./pages/app/Profile.jsx";
 import Revisions from "./pages/app/Revisions.jsx";
 import Topics from "./pages/app/Topics.jsx";
-import Challenges from "./pages/app/Challenges.jsx";
+// import Challenges from "./pages/app/Challenges.jsx";
 import ChangePassword from "./pages/app/ChangePassword.jsx";
 
 import ThemeProvider from "./context/ThemeContext";
@@ -62,7 +62,7 @@ const router = createBrowserRouter(
           <Route path="revisions" element={<Revisions />} />
           <Route path="topics" element={<Topics />} />
           <Route path="analytics" element={<Analytics />} />
-          <Route path="change-password" element={<ChangePassword />} />
+          {/* <Route path="change-password" element={<ChangePassword />} /> */}
           <Route path="challenges" element={<Challenges />} />
         </Route>
       </Route>
