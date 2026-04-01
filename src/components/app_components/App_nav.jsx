@@ -1,19 +1,19 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ThemeContext } from "../../context/ThemeContext";
 import { AuthContext } from "../../context/AuthContext";
-import { useAnalytics } from "../../context/AnalyticsContext";
 import { apiFetch } from "../../utils/apiFetch";
 
 import {
   Home,
-  BookOpen,
   Brain,
   Zap,
   Sun,
   Moon,
   Plus,
   UserRound,
+  KeyRound,
+  LogOut,
 } from "lucide-react";
 
 export default function App_nav({ onOpenAddTopic }) {
@@ -21,20 +21,30 @@ export default function App_nav({ onOpenAddTopic }) {
   const navigate = useNavigate();
 
   const { dark, setDark } = useContext(ThemeContext);
-  const { setAccessToken } = useContext(AuthContext);
-  const { analytics } = useAnalytics();
+  const { setAccessToken, user } = useContext(AuthContext);
 
-  const challenge = analytics?.challenge;
-  const challengeProgress = challenge?.progressPercent || 0;
-  const hasChallenge = !!challenge;
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const firstLetter = user?.fullName?.charAt(0)?.toUpperCase() || "U";
 
   const navItems = [
     { name: "Dashboard", path: "/app", icon: Home },
-    { name: "Topics", path: "/app/topics", icon: BookOpen },
     { name: "Revisions", path: "/app/revisions", icon: Brain },
+    { name: "Analytics", path: "/app/analytics", icon: Brain },
     { name: "Challenges", path: "/app/challenges", icon: Zap },
-    { name: "Profile", path: "/app/profile", icon: UserRound },
   ];
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -52,6 +62,7 @@ export default function App_nav({ onOpenAddTopic }) {
 
   return (
     <>
+      {/* mobile theme */}
       <div className="sm:hidden fixed top-2 left-3 z-10">
         <button
           onClick={() => setDark(!dark)}
@@ -61,35 +72,15 @@ export default function App_nav({ onOpenAddTopic }) {
         </button>
       </div>
 
-      <div className="sm:hidden fixed top-3 right-3 z-50">
-        <button
-          onClick={() => navigate("/app/challenges")}
-          className="px-3 py-2 rounded-full bg-gray-100 dark:bg-[#1E293B] shadow min-w-[120px]"
-        >
-          {hasChallenge ? (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-semibold">Challenge</span>
-              <span className="text-[10px]">•</span>
-              <div className="w-12 h-1.5 rounded-full bg-gray-300 dark:bg-zinc-700 overflow-hidden">
-                <div
-                  className="h-full bg-amber-400 transition-all duration-700"
-                  style={{ width: `${challengeProgress}%` }}
-                />
-              </div>
-            </div>
-          ) : (
-            <span className="text-xs font-semibold">Start</span>
-          )}
-        </button>
-      </div>
-          {/* desktop nav here */}
-      <div className="hidden sm:flex fixed top-0 left-0 w-full mb-10 z-50 dark:bg-zinc-900/30 border-b border-gray-200 dark:border-zinc-800 backdrop-blur-2xl h-20 rounded-b-2xl px-4 lg:px-6 py-3 items-center justify-between shadow-sm">
+      {/* desktop nav */}
+      <div className="hidden sm:flex fixed top-0 left-0 w-full z-50 dark:bg-zinc-900/30 border-b border-gray-200 dark:border-zinc-800 backdrop-blur-2xl h-20 rounded-b-2xl px-4 lg:px-6 py-3 items-center justify-between shadow-sm">
         <div className="flex items-center min-w-fit z-10">
           <h1 className="text-lg lg:text-xl font-garamound font-bold text-black dark:text-white whitespace-nowrap">
             ProStriver
           </h1>
         </div>
 
+        {/* center nav */}
         <div className="absolute left-1/2 -translate-x-1/2 flex font-garamound items-center gap-2 lg:gap-4">
           {navItems.map((item) => {
             const active = location.pathname === item.path;
@@ -110,32 +101,11 @@ export default function App_nav({ onOpenAddTopic }) {
           })}
         </div>
 
-        <div className="flex items-center gap-2 lg:gap-3 min-w-fit z-10">
-          <button
-            onClick={() => navigate("/app/challenges")}
-            className="cursor-pointer hidden lg:block min-w-[170px]"
-          >
-            {hasChallenge ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-garamound text-gray-500 dark:text-gray-400">
-                  Challenge
-                </span>
-                <span className="text-xs text-gray-400">•</span>
-
-                <div className="w-20 h-2 rounded-full bg-gray-200 dark:bg-zinc-700 overflow-hidden">
-                  <div
-                    className="h-full bg-amber-400 transition-all duration-700 ease-out"
-                    style={{ width: `${challengeProgress}%` }}
-                  />
-                </div>
-              </div>
-            ) : (
-              <span className="text-sm font-garamound text-gray-500 dark:text-gray-400">
-                Start a Challenge
-              </span>
-            )}
-          </button>
-
+        {/* right controls */}
+        <div
+          className="flex items-center gap-3 min-w-fit z-10 relative"
+          ref={dropdownRef}
+        >
           <button
             onClick={() => setDark(!dark)}
             className="p-2 rounded-lg bg-gray-100 dark:bg-zinc-800"
@@ -143,15 +113,52 @@ export default function App_nav({ onOpenAddTopic }) {
             {dark ? <Moon size={18} /> : <Sun size={18} />}
           </button>
 
+          {/* avatar */}
           <button
-            onClick={handleLogout}
-            className="bg-red-500 font-garamound rounded-full hover:bg-red-600 text-white px-4 lg:px-6 py-3 lg:py-4 whitespace-nowrap"
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="w-11 h-11 rounded-full bg-amber-400 text-white font-bold flex items-center justify-center shadow-md hover:scale-105 transition"
           >
-            Logout
+            {firstLetter}
           </button>
+
+          {/* dropdown */}
+          {dropdownOpen && (
+            <div className="absolute top-14 right-0 w-56 rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl overflow-hidden">
+              <button
+                onClick={() => {
+                  navigate("/app/profile");
+                  setDropdownOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-zinc-800"
+              >
+                <UserRound size={18} />
+                Profile
+              </button>
+
+              <button
+                onClick={() => {
+                  navigate("/app/change-password");
+                  setDropdownOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-zinc-800"
+              >
+                <KeyRound size={18} />
+                Change Password
+              </button>
+
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-zinc-800"
+              >
+                <LogOut size={18} />
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* mobile add topic button */}
       <div className="sm:hidden fixed bottom-[10px] left-1/2 -translate-x-1/2 z-50">
         <button
           onClick={onOpenAddTopic}
@@ -161,7 +168,8 @@ export default function App_nav({ onOpenAddTopic }) {
         </button>
       </div>
 
-      <div className="sm:hidden fixed bottom-0  left-0 w-full z-40 bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-800 flex justify-evenly gap-20 items-center py-3 shadow-lg">
+      {/* mobile bottom nav */}
+      <div className="sm:hidden fixed bottom-0 left-0 w-full z-40 bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-800 flex justify-evenly gap-20 items-center py-3 shadow-lg">
         <div className="flex gap-8">
           {navItems.slice(0, 2).map((item) => {
             const active = location.pathname === item.path;

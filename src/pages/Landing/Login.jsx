@@ -12,7 +12,7 @@ export default function Login() {
 
   const [loading, setLoading] = useState(false);
 
-  const { setAccessToken } = useContext(AuthContext);
+  const { setAccessToken, setUser: setAuthUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSignin = async () => {
@@ -43,6 +43,14 @@ export default function Login() {
         throw new Error("No token received");
       }
 
+      const userData = {
+        email: user.email,
+        fullName: user.email,
+      };
+
+      localStorage.setItem("user", JSON.stringify(userData));
+      setAuthUser(userData);
+
       setAccessToken(data.accessToken);
 
       toast.success("Welcome back!");
@@ -63,7 +71,6 @@ export default function Login() {
   return (
     <div className="bg-sky-100 min-h-screen flex justify-center items-center px-4 py-6">
       <div className="bg-red-100 w-full max-w-6xl min-h-[85vh] rounded-2xl p-4 flex flex-col md:flex-row gap-4">
-        {/* LEFT PANEL */}
         <div className="bg-[#D7CDCC] rounded-3xl flex flex-col p-6 items-center justify-center w-full md:w-[40%] text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-averaiserif leading-tight">
             Login to <i className="font-garamound">pro</i>strive
@@ -81,7 +88,6 @@ export default function Login() {
           </Link>
         </div>
 
-        {/* RIGHT PANEL */}
         <div className="bg-[#3DFAFF] rounded-3xl md:rounded-4xl w-full md:w-[60%] flex flex-col items-center justify-center px-6 sm:px-10 py-8">
           <div className="w-full max-w-md">
             <label className="block mb-2 font-medium">Email</label>

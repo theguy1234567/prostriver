@@ -30,11 +30,13 @@ import Profile from "./pages/app/Profile.jsx";
 import Revisions from "./pages/app/Revisions.jsx";
 import Topics from "./pages/app/Topics.jsx";
 import Challenges from "./pages/app/Challenges.jsx";
+import ChangePassword from "./pages/app/ChangePassword.jsx";
 
 import ThemeProvider from "./context/ThemeContext";
 import Livein from "./Livein.jsx";
 import Public from "./Public.jsx";
 import { Toaster } from "react-hot-toast";
+import Analytics from "./pages/app/Analytics.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -59,11 +61,13 @@ const router = createBrowserRouter(
           <Route path="profile" element={<Profile />} />
           <Route path="revisions" element={<Revisions />} />
           <Route path="topics" element={<Topics />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="change-password" element={<ChangePassword />} />
           <Route path="challenges" element={<Challenges />} />
         </Route>
       </Route>
 
-      {/* 🔥 ADMIN Check admin routes  */}
+      {/*  ADMIN Check admin routes  */}
       <Route element={<AdminRoute />}>
         <Route element={<ProtectedRoutes />}>
           <Route path="/admin" element={<App_layout />}>
@@ -76,16 +80,12 @@ const router = createBrowserRouter(
 );
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <ThemeProvider>
-      <AuthProvider>
-        <AnalyticsProvider>
-          {" "}
-          {/* 🔥 NEW */}
-          <RouterProvider router={router} />
-          <Toaster position="top-center" />
-        </AnalyticsProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  </StrictMode>,
+  <ThemeProvider>
+    <AuthProvider>
+      <AnalyticsProvider>
+        <RouterProvider router={router} />
+        <Toaster position="top-center" />
+      </AnalyticsProvider>
+    </AuthProvider>
+  </ThemeProvider>,
 );

@@ -7,7 +7,10 @@ export default function AuthProvider({ children }) {
   const [accessToken, setAccessTokenState] = useState(
     localStorage.getItem("accessToken"),
   );
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [authLoading, setAuthLoading] = useState(true);
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -17,29 +20,47 @@ export default function AuthProvider({ children }) {
       localStorage.setItem("accessToken", token);
     } else {
       localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
     }
 
     setAccessTokenState(token);
   };
 
-  // Decode role whenever token changes
   useEffect(() => {
     if (accessToken) {
-      const role = getRoleFromToken(accessToken);
-      setUser({ role });
+      try {
+        const payload = JSON.parse(atob(accessToken.split(".")[1]));
+        const savedUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+        const updatedUser = {
+          ...savedUser,
+          role: payload.role,
+          fullName:
+            payload.fullName ||
+            payload.name ||
+            savedUser.fullName ||
+            savedUser.email ||
+            payload.email,
+          email: payload.email || savedUser.email,
+        };
+
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      } catch (err) {
+        console.error("Token decode failed:", err);
+        setUser(null);
+      }
     } else {
       setUser(null);
     }
   }, [accessToken]);
 
-  //  IMPORTANT: Refresh token when app first loads
   useEffect(() => {
     const bootstrapAuth = async () => {
       try {
         const res = await fetch(`${API_BASE}/api/auth/refresh`, {
           method: "POST",
-          credentials: "include", // this is required evrywhere
-          
+          credentials: "include",
         });
 
         if (res.ok) {
@@ -62,7 +83,6 @@ export default function AuthProvider({ children }) {
     bootstrapAuth();
   }, []);
 
-  //  Listen for refresh event from apiFetch
   useEffect(() => {
     const handleTokenRefresh = (e) => {
       setAccessToken(e.detail);

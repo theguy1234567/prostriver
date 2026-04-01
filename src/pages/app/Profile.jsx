@@ -1,4 +1,14 @@
 import { useEffect, useState } from "react";
+import {
+  User,
+  Mail,
+  Bell,
+  CalendarDays,
+  LogOut,
+  Pencil,
+  Save,
+  X,
+} from "lucide-react";
 import { apiFetch } from "../../utils/apiFetch";
 
 export default function ProfilePage() {
@@ -13,7 +23,6 @@ export default function ProfilePage() {
   const [editMode, setEditMode] = useState(false);
   const [error, setError] = useState("");
 
-  // ✅ Fetch profile
   const fetchProfile = async () => {
     try {
       setLoading(true);
@@ -38,7 +47,6 @@ export default function ProfilePage() {
     fetchProfile();
   }, []);
 
-  // ✅ Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -48,7 +56,6 @@ export default function ProfilePage() {
     }));
   };
 
-  // ✅ Save changes
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -69,7 +76,6 @@ export default function ProfilePage() {
     }
   };
 
-  // ✅ Cancel editing
   const handleCancel = () => {
     setEditData({
       fullName: profile?.fullName || "",
@@ -79,7 +85,6 @@ export default function ProfilePage() {
     setEditMode(false);
   };
 
-  // ✅ Logout
   const handleLogout = async () => {
     try {
       await apiFetch("/api/auth/logout", {
@@ -93,138 +98,170 @@ export default function ProfilePage() {
     }
   };
 
-  // ✅ Loading UI
   if (loading) {
     return (
-      <div className="p-6 text-zinc-300">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-40 bg-zinc-800 rounded" />
-          <div className="h-72 bg-zinc-900 rounded-2xl" />
+      <div className="p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-24 rounded-3xl bg-zinc-200 dark:bg-zinc-800" />
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="h-72 rounded-3xl bg-zinc-200 dark:bg-zinc-800" />
+            <div className="lg:col-span-2 h-72 rounded-3xl bg-zinc-200 dark:bg-zinc-800" />
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-6 text-white">
-      <h1 className="text-2xl md:text-3xl font-bold mb-6">Profile</h1>
+    <div className="p-4 md:p-6 space-y-6 text-zinc-900 dark:text-white">
+      {/* Hero */}
+      <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 md:p-8 shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2">
+              Your Account
+            </p>
+            <h1 className="text-3xl md:text-4xl font-garamound">
+              Profile Settings
+            </h1>
+            <p className="text-zinc-500 dark:text-zinc-400 mt-2">
+              Manage your personal information and preferences.
+            </p>
+          </div>
 
-      {/* ✅ Error Banner */}
+          <button
+            onClick={handleLogout}
+            className="inline-flex items-center gap-2 self-start md:self-auto text-center   rounded-full bg-amber-300 px-6 py-3 text-zinc-900 font-garamound hover:bg-amber-400 transition"
+          >
+            <LogOut size={18} />
+            Logout
+          </button>
+        </div>
+      </div>
+
       {error && (
-        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div className="rounded-2xl border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-300">
           {error}
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* ✅ User Info */}
-        <div className="bg-zinc-900 rounded-2xl p-5 md:p-6 border border-zinc-800 shadow-md">
-          <h2 className="text-lg font-semibold mb-5">User Info</h2>
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Left Profile Card */}
+        <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm">
+          <div className="flex flex-col items-center text-center">
+            <div className="h-24 w-24 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+              <User size={36} />
+            </div>
 
-          {/* Full Name */}
-          <div className="mb-5">
-            <label className="text-sm text-zinc-400">Full Name</label>
+            <h2 className="mt-4 text-xl font-semibold">
+              {profile?.fullName || "Unnamed User"}
+            </h2>
 
-            {editMode ? (
-              <input
-                type="text"
-                name="fullName"
-                value={editData.fullName}
-                onChange={handleChange}
-                className="w-full mt-2 p-3 rounded-xl bg-zinc-800 border border-zinc-700 outline-none focus:border-zinc-500"
-              />
-            ) : (
-              <p className="mt-2 text-zinc-100">
-                {profile?.fullName || "Not set"}
-              </p>
-            )}
-          </div>
-
-          {/* Email */}
-          <div className="mb-5">
-            <label className="text-sm text-zinc-400">Email</label>
-            <p className="mt-2 text-zinc-100 break-all">{profile?.email}</p>
-          </div>
-
-          {/* Joined */}
-          <div className="mb-5">
-            <label className="text-sm text-zinc-400">Joined</label>
-            <p className="mt-2 text-zinc-100">
-              {profile?.createdAt
-                ? new Date(profile.createdAt).toLocaleDateString()
-                : "N/A"}
+            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 break-all">
+              {profile?.email}
             </p>
-          </div>
 
-          {/* Notification Preference */}
-          <div className="mb-5">
-            <label className="text-sm text-zinc-400">
-              Notification Preference
-            </label>
-
-            {editMode ? (
-              <select
-                name="notificationPreference"
-                value={editData.notificationPreference}
-                onChange={handleChange}
-                className="w-full mt-2 p-3 rounded-xl bg-zinc-800 border border-zinc-700 outline-none focus:border-zinc-500"
-              >
-                <option value="EMAIL">Email</option>
-                <option value="NONE">None</option>
-              </select>
-            ) : (
-              <p className="mt-2 text-zinc-100">
-                {profile?.notificationPreference === "NONE" ? "None" : "Email"}
+            <div className="mt-6 w-full rounded-3xl bg-zinc-50 dark:bg-zinc-800 p-4">
+              <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 text-sm">
+                <CalendarDays size={16} />
+                Member Since
+              </div>
+              <p className="mt-2 font-medium">
+                {profile?.createdAt
+                  ? new Date(profile.createdAt).toLocaleDateString()
+                  : "N/A"}
               </p>
-            )}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Settings */}
+        <div className="lg:col-span-2 rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm">
+          <h2 className="text-xl font-semibold mb-6">Personal Information</h2>
+
+          <div className="space-y-6">
+            <div>
+              <label className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                <User size={16} />
+                Full Name
+              </label>
+
+              {editMode ? (
+                <input
+                  type="text"
+                  name="fullName"
+                  value={editData.fullName}
+                  onChange={handleChange}
+                  className="w-full mt-2 rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-4 py-3 outline-none focus:border-zinc-500"
+                />
+              ) : (
+                <p className="mt-2 text-lg">{profile?.fullName || "Not set"}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                <Mail size={16} />
+                Email
+              </label>
+              <p className="mt-2">{profile?.email}</p>
+            </div>
+
+            <div>
+              <label className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                <Bell size={16} />
+                Notification Preference
+              </label>
+
+              {editMode ? (
+                <select
+                  name="notificationPreference"
+                  value={editData.notificationPreference}
+                  onChange={handleChange}
+                  className="w-full mt-2 rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-4 py-3 outline-none focus:border-zinc-500"
+                >
+                  <option value="EMAIL">Email</option>
+                  <option value="NONE">None</option>
+                </select>
+              ) : (
+                <p className="mt-2">
+                  {profile?.notificationPreference === "NONE"
+                    ? "None"
+                    : "Email"}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Buttons */}
-          <div className="flex flex-wrap gap-3 mt-6">
+          <div className="flex flex-wrap gap-3 mt-8">
             {editMode ? (
               <>
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="bg-green-600 px-5 py-2.5 rounded-xl hover:bg-green-700 disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-3 font-medium hover:opacity-90 transition disabled:opacity-50"
                 >
+                  <Save size={18} />
                   {saving ? "Saving..." : "Save Changes"}
                 </button>
 
                 <button
                   onClick={handleCancel}
-                  className="bg-zinc-700 px-5 py-2.5 rounded-xl hover:bg-zinc-600"
+                  className="inline-flex items-center gap-2 rounded-full bg-zinc-100 dark:bg-zinc-800 px-6 py-3 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
                 >
+                  <X size={18} />
                   Cancel
                 </button>
               </>
             ) : (
               <button
                 onClick={() => setEditMode(true)}
-                className="bg-blue-600 px-5 py-2.5 rounded-xl hover:bg-blue-700"
+                className="inline-flex items-center gap-2 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-3 font-medium hover:opacity-90 transition"
               >
+                <Pencil size={18} />
                 Edit Profile
               </button>
             )}
-          </div>
-        </div>
-
-        {/* ✅ Account Settings */}
-        <div className="bg-zinc-900 rounded-2xl p-5 md:p-6 border border-zinc-800 shadow-md h-fit">
-          <h2 className="text-lg font-semibold mb-5">Account Settings</h2>
-
-          <div className="space-y-4">
-            <div className="rounded-xl bg-zinc-800 p-4">
-              <p className="text-sm text-zinc-400 mb-1">Account Status</p>
-              <p className="font-medium text-green-400">Active</p>
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="w-full bg-red-600 py-3 rounded-xl hover:bg-red-700 transition"
-            >
-              Logout
-            </button>
           </div>
         </div>
       </div>

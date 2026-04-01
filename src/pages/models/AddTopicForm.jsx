@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { X, CalendarDays, ChevronDown } from "lucide-react";
+import { X } from "lucide-react";
 import { apiFetch } from "../../utils/apiFetch";
 
 export default function AddTopicForm({
@@ -14,10 +14,9 @@ export default function AddTopicForm({
   const [subject, setSubject] = useState(editingTopic?.subject || "");
   const [notes, setNotes] = useState(editingTopic?.notes || "");
 
-  const [revisionType, setRevisionType] = useState("manual"); // manual | premade | none
-  const [manualPattern, setManualPattern] = useState("");
   const [revisionPlans, setRevisionPlans] = useState([]);
-  const [selectedPlanId, setSelectedPlanId] = useState("");
+  const [selectedRevision, setSelectedRevision] = useState("");
+  const [manualPattern, setManualPattern] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [plansLoading, setPlansLoading] = useState(false);
@@ -25,8 +24,6 @@ export default function AddTopicForm({
   useEffect(() => {
     const handleKey = (e) => e.key === "Escape" && closeModal();
     document.addEventListener("keydown", handleKey);
-
-    // blur + disable scroll including navbar area
     document.body.classList.add("overflow-hidden");
 
     return () => {
@@ -41,7 +38,7 @@ export default function AddTopicForm({
     const loadPlans = async () => {
       try {
         setPlansLoading(true);
-        const data = await apiFetch("/api/admin/revision-plans", {
+        const data = await apiFetch("/api/admin/revision-plans/get-all", {
           method: "GET",
         });
         setRevisionPlans(Array.isArray(data) ? data : []);
@@ -97,18 +94,12 @@ export default function AddTopicForm({
     let cleanedPattern = null;
 
     if (!isEdit) {
-      if (revisionType === "manual") {
+      if (selectedRevision === "custom") {
         const validated = validatePattern(manualPattern);
         if (validated === false) return;
         cleanedPattern = validated;
-      }
-
-      if (revisionType === "premade") {
-        if (!selectedPlanId) {
-          toast.error("Please select a revision plan");
-          return;
-        }
-        revisionPlanId = selectedPlanId;
+      } else if (selectedRevision) {
+        revisionPlanId = selectedRevision;
       }
     }
 
@@ -122,8 +113,8 @@ export default function AddTopicForm({
       };
 
       if (!isEdit) {
-        body.revisionPlanId = revisionPlanId;
-        body.manualReminderPattern = cleanedPattern;
+        body.revisionPlanId = revisionPlanId || undefined;
+        body.manualReminderPattern = cleanedPattern || undefined;
       }
 
       await apiFetch(
@@ -196,26 +187,39 @@ export default function AddTopicForm({
 
           {!isEdit && (
             <>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
-                  Revision Type
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Revision Plan (Optional)
                 </label>
                 <select
-                  value={revisionType}
-                  onChange={(e) => setRevisionType(e.target.value)}
+                  value={selectedRevision}
+                  onChange={(e) => setSelectedRevision(e.target.value)}
+                  disabled={plansLoading}
                   className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 outline-none focus:ring-2 focus:ring-amber-400"
                 >
-                  <option value="manual">Custom Pattern</option>
-                  <option value="premade">Premade Plan</option>
-                  <option value="none">No Revisions</option>
+                  <option value="">
+                    {plansLoading
+                      ? "Loading options..."
+                      : "No revision (default)"}
+                  </option>
+
+                  <option value="custom">Custom Pattern</option>
+
+                  {revisionPlans.map((plan) => (
+                    <option key={plan.id} value={plan.id}>
+                      {plan.name}
+                      {plan.revisionDaysPattern
+                        ? ` (${plan.revisionDaysPattern})`
+                        : ""}
+                    </option>
+                  ))}
                 </select>
               </div>
 
-              {revisionType === "manual" && (
+              {selectedRevision === "custom" && (
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2">
-                    <CalendarDays size={16} />
-                    Revision Days Pattern
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                    Custom Revision Pattern
                   </label>
                   <input
                     value={manualPattern}
@@ -226,32 +230,6 @@ export default function AddTopicForm({
                   <p className="text-xs text-slate-500">
                     Enter revision days between 1–15
                   </p>
-                </div>
-              )}
-
-              {revisionType === "premade" && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                    Choose Premade Plan
-                  </label>
-                  <select
-                    value={selectedPlanId}
-                    onChange={(e) => setSelectedPlanId(e.target.value)}
-                    disabled={plansLoading}
-                    className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 outline-none focus:ring-2 focus:ring-amber-400"
-                  >
-                    <option value="">
-                      {plansLoading ? "Loading plans..." : "Select a plan"}
-                    </option>
-                    {revisionPlans.map((plan) => (
-                      <option key={plan.id} value={plan.id}>
-                        {plan.name}
-                        {plan.revisionDaysPattern
-                          ? ` (${plan.revisionDaysPattern})`
-                          : ""}
-                      </option>
-                    ))}
-                  </select>
                 </div>
               )}
             </>
@@ -268,5 +246,4 @@ export default function AddTopicForm({
       </div>
     </div>
   );
-
 }
