@@ -132,13 +132,13 @@ export default function App_nav({ onOpenAddTopic }) {
       {/* desktop nav */}
       <div className="hidden sm:flex fixed top-0 left-0 w-full z-50 dark:bg-zinc-900/30 border-b border-gray-200 dark:border-zinc-800 backdrop-blur-2xl h-20 rounded-b-2xl px-4 lg:px-6 py-3 items-center justify-between shadow-sm">
         <div className="flex items-center gap-3 min-w-fit z-10">
-          <div className="h-11 w-11 rounded-2xl overflow-hidden shadow-md ring-1 ring-gray-200 dark:ring-zinc-700 bg-white dark:bg-zinc-800">
-            {/* <img
+          {/* <div className="h-11 w-11 rounded-2xl overflow-hidden shadow-md ring-1 ring-gray-200 dark:ring-zinc-700 bg-white dark:bg-zinc-800">
+            <img
               className="h-full w-full object-cover"
               src={logo}
               alt="ProStriver Logo"
-            /> */}
-          </div>
+            />
+          </div> */}
 
           <h1 className="text-xl font-averaiserif font-bold tracking-tight text-black dark:text-white">
             <Link to={"/"}>ProStriver</Link>

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { X } from "lucide-react";
+import { X, ChevronDown, Info, Check } from "lucide-react";
 import { apiFetch } from "../../utils/apiFetch";
 
 export default function AddTopicForm({
@@ -17,6 +17,9 @@ export default function AddTopicForm({
   const [revisionPlans, setRevisionPlans] = useState([]);
   const [selectedRevision, setSelectedRevision] = useState("");
   const [manualPattern, setManualPattern] = useState("");
+  const [hoveredPlan, setHoveredPlan] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const [loading, setLoading] = useState(false);
   const [plansLoading, setPlansLoading] = useState(false);
@@ -25,7 +28,6 @@ export default function AddTopicForm({
     const handleKey = (e) => e.key === "Escape" && closeModal();
     document.addEventListener("keydown", handleKey);
     document.body.classList.add("overflow-hidden");
-
     return () => {
       document.removeEventListener("keydown", handleKey);
       document.body.classList.remove("overflow-hidden");
@@ -33,8 +35,18 @@ export default function AddTopicForm({
   }, [closeModal]);
 
   useEffect(() => {
-    if (isEdit) return;
+    const handleOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+        setHoveredPlan(null);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
 
+  useEffect(() => {
+    if (isEdit) return;
     const loadPlans = async () => {
       try {
         setPlansLoading(true);
@@ -49,32 +61,30 @@ export default function AddTopicForm({
         setPlansLoading(false);
       }
     };
-
     loadPlans();
   }, [isEdit]);
 
+  const selectedPlan = useMemo(
+    () => revisionPlans.find((p) => p.id === selectedRevision),
+    [revisionPlans, selectedRevision],
+  );
+
   const validatePattern = (pattern) => {
     if (!pattern) return null;
-
     const cleaned = pattern.replace(/\s+/g, "");
-
     if (!/^(\d+)(,\d+)*$/.test(cleaned)) {
       toast.error("Use format like 1,4,7");
       return false;
     }
-
     const days = cleaned.split(",").map(Number);
-
     if (days.some((day) => day < 1 || day > 15)) {
       toast.error("Revision days must be between 1 and 15");
       return false;
     }
-
     if (new Set(days).size !== days.length) {
       toast.error("Duplicate days are not allowed");
       return false;
     }
-
     return cleaned;
   };
 
@@ -84,7 +94,6 @@ export default function AddTopicForm({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!title.trim() || !subject.trim()) {
       toast.error("Title and Subject are required");
       return;
@@ -105,7 +114,6 @@ export default function AddTopicForm({
 
     try {
       setLoading(true);
-
       const body = {
         title: title.trim(),
         subject: subject.trim(),
@@ -136,21 +144,18 @@ export default function AddTopicForm({
     }
   };
 
+  const dropdownLabel =
+    selectedRevision === "custom"
+      ? "Custom Pattern"
+      : selectedPlan?.name || "Choose a revision plan";
+
   return (
     <div
       onClick={handleOverlayClick}
       className="fixed inset-0 z-[9999] bg-black/45 backdrop-blur-md flex justify-center items-start px-4"
       style={{ paddingTop: "110px", paddingBottom: "24px" }}
     >
-      <div
-        className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-[#1E293B] shadow-2xl p-6 sm:p-7"
-        style={{
-          maxHeight: "calc(100vh - 140px)",
-          overflowY: "auto",
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-        }}
-      >
+      <div className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-[#1E293B] shadow-2xl p-6 sm:p-7">
         <button
           onClick={closeModal}
           className="absolute top-5 right-5 text-gray-400 hover:text-red-500 transition"
@@ -167,53 +172,96 @@ export default function AddTopicForm({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Topic title"
-            className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 outline-none focus:ring-2 focus:ring-amber-400"
+            className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 dark:text-white outline-none focus:ring-2 focus:ring-amber-400"
           />
-
           <input
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Subject"
-            className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 outline-none focus:ring-2 focus:ring-amber-400"
+            className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 dark:text-white outline-none focus:ring-2 focus:ring-amber-400"
           />
-
           <textarea
             rows={3}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Notes (optional)"
-            className="w-full px-4 py-3 rounded-2xl bg-gray-100 dark:bg-zinc-800 outline-none resize-none focus:ring-2 focus:ring-amber-400"
+            className="w-full px-4 py-3 rounded-2xl bg-gray-100 dark:bg-zinc-800 dark:text-white outline-none resize-none focus:ring-2 focus:ring-amber-400"
           />
 
           {!isEdit && (
             <>
-              <div className="space-y-2">
+              <div className="space-y-2" ref={dropdownRef}>
                 <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
                   Revision Plan (Optional)
                 </label>
-                <select
-                  value={selectedRevision}
-                  onChange={(e) => setSelectedRevision(e.target.value)}
-                  disabled={plansLoading}
-                  className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 outline-none focus:ring-2 focus:ring-amber-400"
+
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen((p) => !p)}
+                  className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 dark:text-white border border-slate-200 dark:border-zinc-700 hover:border-amber-300 flex items-center justify-between transition-all"
                 >
-                  <option value="">
-                    {plansLoading
-                      ? "Loading options..."
-                      : "No revision (default)"}
-                  </option>
+                  <span className="truncate">
+                    {plansLoading ? "Loading..." : dropdownLabel}
+                  </span>
+                  <ChevronDown
+                    size={18}
+                    className={`transition ${dropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
 
-                  <option value="custom">Custom Pattern</option>
+                {dropdownOpen && (
+                  <div className="mt-2 rounded-2xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-xl overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedRevision("custom");
+                        setDropdownOpen(false);
+                      }}
+                      className="w-full px-4 py-3 text-left hover:bg-amber-50 dark:hover:bg-zinc-800 transition"
+                    >
+                      Custom Pattern
+                    </button>
 
-                  {revisionPlans.map((plan) => (
-                    <option key={plan.id} value={plan.id}>
-                      {plan.name}
-                      {plan.revisionDaysPattern
-                        ? ` (${plan.revisionDaysPattern})`
-                        : ""}
-                    </option>
-                  ))}
-                </select>
+                    {revisionPlans.map((plan) => (
+                      <button
+                        key={plan.id}
+                        type="button"
+                        onMouseEnter={() => setHoveredPlan(plan)}
+                        onClick={() => {
+                          setSelectedRevision(plan.id);
+                          setDropdownOpen(false);
+                        }}
+                        className="w-full px-4 py-3 text-left hover:bg-amber-50 dark:hover:bg-zinc-800 transition flex items-center justify-between"
+                      >
+                        <div>
+                          <p className="font-medium text-slate-700 dark:text-white">
+                            {plan.name}
+                          </p>
+                          {hoveredPlan?.id === plan.id && plan.description && (
+                            <p className="text-xs text-slate-500 mt-1">
+                              {plan.description}
+                            </p>
+                          )}
+                        </div>
+                        {selectedRevision === plan.id && <Check size={16} />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {selectedPlan?.description && (
+                  <div className="rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-900/20 px-4 py-3 text-sm text-slate-700 dark:text-slate-200">
+                    <div className="flex items-start gap-2">
+                      <Info size={16} className="mt-0.5 text-amber-500" />
+                      <div>
+                        <p className="font-medium">{selectedPlan.name}</p>
+                        <p className="text-xs opacity-80 mt-1">
+                          {selectedPlan.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {selectedRevision === "custom" && (
@@ -225,7 +273,7 @@ export default function AddTopicForm({
                     value={manualPattern}
                     onChange={(e) => setManualPattern(e.target.value)}
                     placeholder="Example: 1,4,7"
-                    className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full h-12 px-4 rounded-2xl bg-gray-100 dark:bg-zinc-800 dark:text-white outline-none focus:ring-2 focus:ring-amber-400"
                   />
                   <p className="text-xs text-slate-500">
                     Enter revision days between 1–15

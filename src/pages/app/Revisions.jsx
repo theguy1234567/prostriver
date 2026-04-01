@@ -122,22 +122,26 @@ export default function Revisions() {
               {upcomingRevisions.slice(0, 10).map((rev) => (
                 <div
                   key={rev.revisionScheduleId}
-                  className="p-4 rounded-2xl flex justify-between items-center bg-white dark:bg-[#1E293B] shadow"
+                  className="p-4 rounded-2xl flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-white dark:bg-[#1E293B] shadow"
                 >
-                  <div className="font-averaiserif text-black dark:text-white">
-                    <p className="text-2xl">{rev.title}</p>
+                  <div className="font-averaiserif text-black dark:text-white min-w-0 flex-1">
+                    <p className="text-lg sm:text-2xl break-words leading-snug">
+                      {rev.title}
+                    </p>
 
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 break-words">
                       {rev.subject} • Day {rev.dayNumber}
                     </p>
 
                     {rev.status && (
-                      <p className="text-xs text-blue-400 mt-1">{rev.status}</p>
+                      <p className="text-xs text-blue-400 mt-1 break-words">
+                        {rev.status}
+                      </p>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <p className="text-xs font-serif text-gray-400">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
+                    <p className="text-xs font-serif text-gray-400 break-words">
                       {rev.scheduledDate}
                     </p>
 
@@ -147,7 +151,7 @@ export default function Revisions() {
                         setShowArchiveConfirm(true);
                       }}
                       disabled={archivingId === rev.topicId}
-                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-300 hover:bg-amber-400 transition font-medium text-black disabled:opacity-50"
+                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-amber-300 hover:bg-amber-400 transition font-medium text-black disabled:opacity-50 whitespace-nowrap"
                     >
                       <Archive size={16} />
                       {archivingId === rev.topicId ? "Archiving..." : "Archive"}

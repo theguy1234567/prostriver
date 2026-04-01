@@ -94,35 +94,45 @@ export default function Analytics() {
               />
             </div>
 
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-2">
+            <div className="mt-6 rounded-3xl bg-gray-100 dark:bg-[#0F172A] p-6">
+              <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <Percent size={16} />
-                  <span>Revision Success Rate</span>
+                  <span className="font-medium">Revision Success Rate</span>
                 </div>
-                <span className="font-semibold">{revisionRate}%</span>
+                <span className="text-lg font-bold font-averaiserif">
+                  {revisionRate}%
+                </span>
               </div>
 
-              <div className="mt-8 flex flex-col items-center justify-center rounded-2xl bg-gray-100 dark:bg-[#0F172A] p-6">
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  <Percent size={16} />
-                  <span>Revision Success Rate</span>
+              <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                {/* left ring */}
+                <div className="flex justify-center">
+                  <ProgressRing progress={revisionRate} />
                 </div>
 
-                <ProgressRing progress={revisionRate} />
+                {/* right explanation */}
+                <div className="flex-1 text-center md:text-left">
+                  <h3 className="text-xl font-bold font-averaiserif mb-2">
+                    Monthly Revision Health
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                    This score reflects how consistently you're completing
+                    scheduled revisions this month compared to missed ones.
+                  </p>
 
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-                  Based on completed vs missed revisions this month
-                </p>
+                  <div className="mt-4 w-full h-3 rounded-full bg-gray-300 dark:bg-[#1E293B] overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-amber-300 transition-all duration-700"
+                      style={{ width: `${revisionRate}%` }}
+                    />
+                  </div>
+                </div>
               </div>
-
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Based on completed vs missed revisions this month
-              </p>
             </div>
           </div>
 
-          {/* better honest empty state */}
+          
           {!hasAnalyticsData && (
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20 px-6">
               <div className="mb-5 w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-400/10 flex items-center justify-center">

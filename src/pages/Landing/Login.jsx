@@ -1,9 +1,9 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { apiFetch } from "../../utils/apiFetch";
 import toast from "react-hot-toast";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const [user, setUser] = useState({
@@ -12,10 +12,17 @@ export default function Login() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [fadeIn, setFadeIn] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { setAccessToken, setUser: setAuthUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => setFadeIn(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSignin = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -71,7 +78,11 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 flex items-center justify-center px-4 py-6">
-      <div className="w-full max-w-6xl rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden grid md:grid-cols-2">
+      <div
+        className={`w-full max-w-6xl rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden grid md:grid-cols-2 transition-all duration-700 ease-out ${
+          fadeIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+        }`}
+      >
         {/* Left Branding Panel */}
         <div className="hidden md:flex flex-col justify-center px-10 lg:px-16 py-12 border-r border-zinc-200 dark:border-zinc-800 bg-amber-300 dark:bg-zinc-900">
           <p className="text-sm uppercase tracking-[0.25em] text-zinc-500 dark:text-zinc-400 mb-4">
@@ -82,9 +93,7 @@ export default function Login() {
             Login to <i>pro</i>striver
           </h1>
 
-          <p className="mt-6 text-zinc-500 dark:text-zinc-400 text-lg leading-8">
-            
-          </p>
+          <p className="mt-6 text-zinc-500 dark:text-zinc-400 text-lg leading-8"></p>
 
           <div className="mt-10">
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -100,7 +109,11 @@ export default function Login() {
         </div>
 
         {/* Right Login Form */}
-        <div className="flex items-center justify-center px-6 sm:px-10 py-10">
+        <div
+          className={`flex items-center justify-center px-6 sm:px-10 py-10 transition-all duration-700 delay-150 ${
+            fadeIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
+        >
           <div className="w-full max-w-md">
             <h1 className="text-4xl font-garamound text-zinc-900 dark:text-white md:hidden">
               Welcome Back
@@ -142,14 +155,22 @@ export default function Login() {
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
                   />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     value={user.password}
                     onChange={(e) =>
                       setUser({ ...user, password: e.target.value })
                     }
-                    className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-12 pr-4 py-3 outline-none focus:border-zinc-500 text-zinc-900 dark:text-white"
+                    className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-12 pr-12 py-3 outline-none focus:border-zinc-500 text-zinc-900 dark:text-white"
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
 

@@ -1,14 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiFetch } from "../../utils/apiFetch";
 import toast from "react-hot-toast";
-import { Mail, User, Lock, KeyRound } from "lucide-react";
+import { Mail, User, Lock, KeyRound, Eye, EyeOff } from "lucide-react";
 
 export default function Signup() {
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [fadeIn, setFadeIn] = useState(false);
 
   const [user, setUser] = useState({
     email: "",
@@ -18,6 +21,11 @@ export default function Signup() {
   });
 
   const [otp, setOtp] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setFadeIn(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleEmailNext = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -117,7 +125,11 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 flex items-center justify-center px-4 py-6">
-      <div className="w-full max-w-6xl rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden grid md:grid-cols-2">
+      <div
+        className={`w-full max-w-6xl rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden grid md:grid-cols-2 transition-all duration-700 ease-out ${
+          fadeIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+        }`}
+      >
         {/* Left Branding Panel */}
         <div className="hidden md:flex flex-col justify-center px-10 lg:px-16 py-12 border-r border-zinc-200 dark:border-zinc-800 bg-amber-300 dark:bg-zinc-900">
           <p className="text-sm uppercase tracking-[0.25em] text-zinc-600 dark:text-zinc-400 mb-4">
@@ -147,7 +159,11 @@ export default function Signup() {
         </div>
 
         {/* Right Signup Form */}
-        <div className="flex items-center justify-center px-6 sm:px-10 py-10 overflow-hidden">
+        <div
+          className={`flex items-center justify-center px-6 sm:px-10 py-10 overflow-hidden transition-all duration-700 delay-150 ${
+            fadeIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
+        >
           <div className="w-full max-w-md overflow-hidden">
             <h1 className="text-4xl font-garamound text-zinc-900 dark:text-white md:hidden">
               Create Account
@@ -216,14 +232,22 @@ export default function Signup() {
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
                   />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Password"
                     value={user.password}
                     onChange={(e) =>
                       setUser({ ...user, password: e.target.value })
                     }
-                    className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-12 pr-4 py-3 outline-none"
+                    className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-12 pr-12 py-3 outline-none"
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
 
                 <div className="relative">
@@ -232,7 +256,7 @@ export default function Signup() {
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
                   />
                   <input
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm Password"
                     value={user.confirmPassword}
                     onChange={(e) =>
@@ -241,8 +265,20 @@ export default function Signup() {
                         confirmPassword: e.target.value,
                       })
                     }
-                    className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-12 pr-4 py-3 outline-none"
+                    className="w-full rounded-3xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-12 pr-12 py-3 outline-none"
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
                 </div>
 
                 <button

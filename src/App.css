@@ -38,12 +38,10 @@
   }
 
   50% {
-    transform: scale(1.0);
+    transform: scale(1);
     opacity: 1;
     box-shadow: 0 0 20px 8px rgba(255, 0, 0, 0.2);
   }
-
-  
 }
 
 .live-dot {
@@ -52,4 +50,15 @@
   background: red;
   border-radius: 9999px;
   animation: livePulse 1.5s infinite;
+}
+@keyframes fadePulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(-4px);
+  }
 }

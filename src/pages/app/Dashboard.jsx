@@ -198,17 +198,20 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* text area keeps safe space for streak */}
           <div className="pr-20 sm:pr-24">
             <p className="text-sm text-gray-500 font-averaiserif">
               Challenge Progress
             </p>
             <h3 className="text-2xl font-bold font-averaiserif">{progress}%</h3>
-            <div className="w-full h-4 rounded-full bg-gray-300 dark:bg-[#1E293B] overflow-hidden mt-3">
-              <div
-                className="h-full rounded-full bg-amber-300"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
+          </div>
+
+          {/* progress bar now FULL WIDTH */}
+          <div className="w-full h-4 rounded-full bg-gray-300 dark:bg-[#1E293B] overflow-hidden mt-3">
+            <div
+              className="h-full rounded-full bg-amber-300 transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
           </div>
 
           <div className="mt-5">
@@ -227,14 +230,22 @@ export default function Dashboard() {
                   className="flex flex-col items-center min-w-0"
                 >
                   <div
-                    className={`text-[10px] sm:text-xs font-averaiserif h-5 mb-1 transition-all duration-300 text-center ${hoveredDay === index ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"}`}
+                    className={`text-[10px] sm:text-xs font-averaiserif h-5 mb-1 transition-all duration-300 text-center ${
+                      hoveredDay === index
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 -translate-y-1"
+                    }`}
                   >
                     {`Topics: ${day.count}`}
                   </div>
+
                   <div
-                    className={`w-full h-4 sm:h-5 rounded-full cursor-pointer transition-all duration-300 ${hoveredDay === index ? "-translate-y-1 shadow-md" : ""}`}
+                    className={`w-full h-4 sm:h-5 rounded-full cursor-pointer transition-all duration-300 ${
+                      hoveredDay === index ? "-translate-y-1 shadow-md" : ""
+                    }`}
                     style={{ backgroundColor: getColor(day.count) }}
                   />
+
                   <p className="text-[10px] mt-1 text-gray-500 font-averaiserif">
                     {day.label}
                   </p>
