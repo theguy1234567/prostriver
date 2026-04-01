@@ -36,7 +36,7 @@ export default function LandingNavbar() {
         </button> */}
 
         <button
-          onClick={() => navigate("/signin")}
+          onClick={() => navigate("/login")}
           className="hover:text-lime-300 transition"
         >
           Sign In
