@@ -9,7 +9,7 @@ export default function Public() {
   if (authLoading) {
     return (
       <>
-        <div>New access token generating hold on</div>
+        <div>Loading</div>
       </>
     );
   }

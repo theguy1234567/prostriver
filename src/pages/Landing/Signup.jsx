@@ -28,15 +28,8 @@ export default function Signup() {
   }, []);
 
   const handleEmailNext = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     if (!user.email) {
       toast.error("Email is required");
-      return;
-    }
-
-    if (!emailRegex.test(user.email)) {
-      toast.error("Enter a valid email");
       return;
     }
 
@@ -54,15 +47,10 @@ export default function Signup() {
       return;
     }
 
-    if (user.password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-
     try {
       setLoading(true);
 
-      await apiFetch("/api/auth/signup", {
+      const res = await apiFetch("/api/auth/signup", {
         method: "POST",
         body: JSON.stringify({
           email: user.email,
@@ -71,14 +59,15 @@ export default function Signup() {
         }),
       });
 
-      toast.success("OTP sent to your email");
+      toast.success(res?.message || "OTP sent to your email");
       setStep(3);
     } catch (err) {
-      if (err.status === 409) {
-        toast.error("Account already exists. Please login.");
-      } else {
-        toast.error(err.message || "Signup failed");
-      }
+      toast.error(
+        err?.data?.password ||
+          err?.data?.message ||
+          err.message ||
+          "Signup failed",
+      );  
     } finally {
       setLoading(false);
     }

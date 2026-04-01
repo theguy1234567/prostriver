@@ -25,15 +25,8 @@ export default function Login() {
   }, []);
 
   const handleSignin = async () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     if (!user.email || !user.password) {
       toast.error("Email and password are required");
-      return;
-    }
-
-    if (!emailRegex.test(user.email)) {
-      toast.error("Enter a valid email");
       return;
     }
 
@@ -61,16 +54,10 @@ export default function Login() {
       setAuthUser(userData);
       setAccessToken(data.accessToken);
 
-      toast.success("Welcome back!");
+      toast.success(data?.message || "Welcome back!");
       navigate("/app");
     } catch (err) {
-      if (err.status === 401) {
-        toast.error("Invalid email or password");
-      } else if (err.status === 403) {
-        toast.error("Email not verified");
-      } else {
-        toast.error(err.message || "Login failed");
-      }
+      toast.error(err.message || "Login failed");
     } finally {
       setLoading(false);
     }

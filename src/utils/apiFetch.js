@@ -3,7 +3,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const apiFetch = async (endpoint, options = {}) => {
   let token = localStorage.getItem("accessToken");
 
-  // 🔁 function to make request
+  //  function to make request
   const makeRequest = async (customToken = token) => {
     console.log("➡️ API CALL:", `${BASE_URL}${endpoint}`);
     console.log("🔐 TOKEN:", customToken);
@@ -15,7 +15,7 @@ export const apiFetch = async (endpoint, options = {}) => {
         ...(customToken && { Authorization: `Bearer ${customToken}` }),
         ...options.headers,
       },
-      credentials: "include", // 🔥 needed for refresh cookie
+      credentials: "include", // PLease DONTT FORGET THIS 
     });
 
     console.log("📡 STATUS:", res.status);
@@ -34,20 +34,26 @@ export const apiFetch = async (endpoint, options = {}) => {
     return { res, data };
   };
 
-  // 🔹 FIRST REQUEST
+  //  FIRST REQUEST
   let { res, data } = await makeRequest();
 
-  // 🔥 HANDLE 401 → try refresh
-  if (res.status === 401) {
-    console.log("⚠️ 401 detected → trying refresh...");
+  //  HANDLE 401 → try refresh
+  const shouldSkipRefresh =
+    endpoint.includes("/api/auth/login") ||
+    endpoint.includes("/api/auth/signup") ||
+    endpoint.includes("/api/auth/signup/verify-otp") ||
+    endpoint.includes("/api/auth/signup/resend-otp") ||
+    endpoint.includes("/api/auth/forgot-password") ||
+    endpoint.includes("/api/auth/reset-password");
 
+  if (res.status === 401 && !shouldSkipRefresh) {
     try {
       const refreshRes = await fetch(`${BASE_URL}/api/auth/refresh`, {
         method: "POST",
         credentials: "include",
       });
 
-      console.log("🔄 REFRESH STATUS:", refreshRes.status);
+      console.log(" REFRESH STATUS:", refreshRes.status);
 
       if (!refreshRes.ok) {
         throw new Error("Refresh failed");
@@ -55,11 +61,11 @@ export const apiFetch = async (endpoint, options = {}) => {
 
       const refreshData = await refreshRes.json();
 
-      console.log("✅ REFRESH SUCCESS:", refreshData);
+      console.log(" REFRESH SUCCESS:", refreshData);
 
       const newToken = refreshData.accessToken;
 
-      // ✅ store new token
+      //  store new token
       localStorage.setItem("accessToken", newToken);
 
       // ✅ update AuthContext instantly
@@ -69,7 +75,7 @@ export const apiFetch = async (endpoint, options = {}) => {
         }),
       );
 
-      // 🔁 retry original request
+      //  retry original request
       const retry = await makeRequest(newToken);
 
       if (!retry.res.ok) {
@@ -83,12 +89,12 @@ export const apiFetch = async (endpoint, options = {}) => {
 
       return retry.data;
     } catch (err) {
-      console.log("🚨 FINAL AUTH FAILURE:", err);
+      console.log(" FINAL AUTH FAILURE:", err);
 
-      // ❗ clear token
+      //  clear token
       localStorage.removeItem("accessToken");
 
-      // ✅ tell whole app logout happened
+      //  tell whole app logout happened
       window.dispatchEvent(new CustomEvent("logout"));
 
       throw {
