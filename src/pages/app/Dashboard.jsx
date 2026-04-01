@@ -365,7 +365,7 @@ export default function Dashboard() {
                             t.manualReminderPattern ||
                             t.customRevisionDays ||
                             t.revisionDaysPattern ||
-                            "Custom plan",
+                            "No revision",
                         });
                       }
                     }}

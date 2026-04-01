@@ -262,13 +262,6 @@ export default function ProfilePage() {
                 Edit Profile
               </button>
             )}
-            <button
-              onClick={handleLogout}
-              className="inline-flex items-center gap-2 self-start md:self-auto text-center   rounded-full bg-amber-300 px-6 py-3 text-zinc-900 font-garamound hover:bg-amber-400 transition"
-            >
-              <LogOut size={18} />
-              Logout
-            </button>
           </div>
         </div>
       </div>
