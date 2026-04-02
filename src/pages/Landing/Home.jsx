@@ -137,10 +137,10 @@ function Home() {
 
         {/* PRODUCT SHOWCASE */}
         <div className="mx-4 sm:mx-8 md:mx-12 lg:mx-16 mt-12 mb-16">
-          <div className="bg-gradient-to-br from-amber-100/70 via-white/60 to-orange-100/70 backdrop-blur-xl border border-amber-300/40 shadow-md rounded-[2rem] p-6 sm:p-8 md:p-10 space-y-8">
+          <div className="bg-gradient-to-br from-amber-100/70 via-white/60 to-orange-100/70 backdrop-blur-xl border border-amber-300/40 shadow-sm rounded-[2rem] p-6 sm:p-8 md:p-10 space-y-8">
             {/* TOP */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 reveal-section">
-              <div className="bg-white/40 rounded-[2rem] p-6 sm:p-8 shadow-lg border border-white/30 flex flex-col justify-center">
+              <div className="bg-white/40 rounded-[2rem] p-6 sm:p-8 shadow-sm  border border-white/30 flex flex-col justify-center">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-garamound leading-tight">
                   All your learnings <br /> in one peaceful place
                 </h1>
@@ -151,7 +151,7 @@ function Home() {
               </div>
 
               {/* HIDDEN ONLY ON MOBILE */}
-              <div className="hidden md:block bg-gradient-to-br from-sky-200/60 to-indigo-200/50 rounded-[2rem] overflow-hidden shadow-lg border border-white/30 min-h-[300px]">
+              <div className="hidden md:block bg-gradient-to-br from-sky-200/60 to-indigo-200/50 rounded-[2rem] overflow-hidden shadow-sm border border-white/30 min-h-[300px]">
                 <img
                   src={img4}
                   alt="Dashboard preview"
