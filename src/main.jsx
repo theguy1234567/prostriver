@@ -39,6 +39,8 @@ import Livein from "./Livein.jsx";
 import Public from "./Public.jsx";
 import { Toaster } from "react-hot-toast";
 import Analytics from "./pages/app/Analytics.jsx";
+import About from "./pages/Landing/About.jsx";
+import Feedback from "./pages/Landing/Feedback.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -56,7 +58,8 @@ const router = createBrowserRouter(
 
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/howlong" element={<Livein />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/feedback" element={<Feedback />} />
       <Route path="/test" element={<App />} />
       {/* Protected (normal users) */}
       <Route element={<ProtectedRoutes />}>
