@@ -3,9 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { apiFetch } from "../../utils/apiFetch";
 import toast from "react-hot-toast";
 import { Mail, User, Lock, KeyRound, Eye, EyeOff } from "lucide-react";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function Signup() {
   const navigate = useNavigate();
+  const { setAccessToken } = useContext(AuthContext);
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -26,6 +29,44 @@ export default function Signup() {
     const timer = setTimeout(() => setFadeIn(true), 100);
     return () => clearTimeout(timer);
   }, []);
+  const handleSignin = async () => {
+    if (!user.email || !user.password) {
+      toast.error("Email and password are required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const data = await apiFetch("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          email: user.email,
+          password: user.password,
+        }),
+      });
+
+      if (!data.accessToken) {
+        throw new Error("No token received");
+      }
+
+      const userData = {
+        email: user.email,
+        fullName: user.email,
+      };
+
+      localStorage.setItem("user", JSON.stringify(userData));
+      
+      setAccessToken(data.accessToken);
+
+      toast.success(data?.message || "Welcome back!");
+      navigate("/app");
+    } catch (err) {
+      toast.error(err.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEmailNext = () => {
     if (!user.email) {
@@ -62,12 +103,22 @@ export default function Signup() {
       toast.success(res?.message || "OTP sent to your email");
       setStep(3);
     } catch (err) {
-      toast.error(
+      const message =
         err?.data?.password ||
-          err?.data?.message ||
-          err.message ||
-          "Signup failed",
-      );  
+        err?.data?.message ||
+        err.message ||
+        "Signup failed";
+
+      if (
+        message.toLowerCase().includes("already registered") ||
+        message.toLowerCase().includes("already exists")
+      ) {
+        toast("Email already exists. Continue OTP verification.");
+        setStep(3);
+        return;
+      }
+
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -86,8 +137,33 @@ export default function Signup() {
         }),
       });
 
-      toast.success("Email verified successfully");
-      navigate("/login");
+      // AUTO LOGIN AFTER VERIFY
+      const loginData = await apiFetch("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          email: user.email,
+          password: user.password,
+        }),
+      });
+
+      if (!loginData.accessToken) {
+        throw new Error("No token received");
+      }
+
+      
+      const userData = {
+        email: user.email,
+        fullName: user.fullname,
+      };
+
+      localStorage.setItem("accessToken", loginData.accessToken);
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      setAccessToken(loginData.accessToken);
+      
+
+      toast.success("Account created successfully");
+      navigate("/app");
     } catch (err) {
       toast.error(err.message || "OTP verification failed");
     } finally {
