@@ -308,6 +308,15 @@ export default function Signup() {
                 >
                   Resend OTP
                 </button>
+                <button
+                  onClick={() => {
+                    setStep(1);
+                    setOtp("");
+                  }}
+                  className="w-full text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                >
+                  ← Go back & change email
+                </button>
               </div>
             </div>
           </div>
