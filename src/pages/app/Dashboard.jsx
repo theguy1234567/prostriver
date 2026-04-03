@@ -149,6 +149,7 @@ export default function Dashboard() {
       }
 
       await loadDashboard();
+      window.dispatchEvent(new Event("revisionCompleted"));
     } catch {
       toast.error("Failed to delete topic");
     }
@@ -281,10 +282,24 @@ export default function Dashboard() {
                 </p>
               </div>
               <button
-                onClick={() => navigate("/app/revisions")}
-                className="px-3 py-1.5 rounded-full bg-amber-300 text-sm w-full sm:w-auto"
+                onClick={async () => {
+                  try {
+                    await apiFetch(
+                      `/api/topics/revisions/${r.revisionScheduleId}/complete`,
+                      {
+                        method: "PATCH",
+                      },
+                    );
+
+                    toast.success("Revision completed 🎉");
+                    await loadDashboard();
+                  } catch {
+                    toast.error("Failed to complete revision");
+                  }
+                }}
+                className="px-3 py-1.5 rounded-full bg-green-500 text-white text-sm w-full sm:w-auto"
               >
-                Go
+                Completed
               </button>
             </div>
           ))
