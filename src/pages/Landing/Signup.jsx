@@ -56,7 +56,7 @@ export default function Signup() {
       };
 
       localStorage.setItem("user", JSON.stringify(userData));
-      
+
       setAccessToken(data.accessToken);
 
       toast.success(data?.message || "Welcome back!");
@@ -109,13 +109,38 @@ export default function Signup() {
         err.message ||
         "Signup failed";
 
+      const lowerMsg = message.toLowerCase();
+
       if (
-        message.toLowerCase().includes("already registered") ||
-        message.toLowerCase().includes("already exists")
+        lowerMsg.includes("already registered") ||
+        lowerMsg.includes("already exists")
       ) {
-        toast("Email already exists. Continue OTP verification.");
-        setStep(3);
-        return;
+        try {
+          await apiFetch("/api/auth/login", {
+            method: "POST",
+            body: JSON.stringify({
+              email: user.email,
+              password: user.password,
+            }),
+          });
+
+          toast.error("Account already exists. Please login.");
+          navigate("/login");
+          return;
+        } catch (loginErr) {
+          const loginMessage =
+            loginErr?.data?.message || loginErr.message || "";
+
+          if (loginMessage.toLowerCase().includes("not verified")) {
+            toast("Email exists but not verified. Please verify OTP.");
+            setStep(3);
+            return;
+          }
+
+          toast.error("Account already exists. Please login.");
+          navigate("/login");
+          return;
+        }
       }
 
       toast.error(message);
@@ -150,7 +175,6 @@ export default function Signup() {
         throw new Error("No token received");
       }
 
-      
       const userData = {
         email: user.email,
         fullName: user.fullname,
@@ -160,7 +184,6 @@ export default function Signup() {
       localStorage.setItem("user", JSON.stringify(userData));
 
       setAccessToken(loginData.accessToken);
-      
 
       toast.success("Account created successfully");
       navigate("/app");
@@ -360,8 +383,11 @@ export default function Signup() {
                 <div className="relative">
                   <KeyRound
                     size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
+                    className="absolute left-4 top-5/6 -translate-y-1/2 text-zinc-400"
                   />
+                  <p className="bg-gray-400/50 font-garamound text-2xl text-shadow-md text-center  mb-5 rounded-2xl p-6">
+                    Your Email : {`${user.email}`}
+                  </p>
                   <input
                     placeholder="Enter OTP"
                     value={otp}
