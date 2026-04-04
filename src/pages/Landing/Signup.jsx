@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { apiFetch } from "../../utils/apiFetch";
 import toast from "react-hot-toast";
 import { Mail, User, Lock, KeyRound, Eye, EyeOff } from "lucide-react";
@@ -8,6 +8,7 @@ import { AuthContext } from "../../context/AuthContext";
 
 export default function Signup() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setAccessToken } = useContext(AuthContext);
 
   const [step, setStep] = useState(1);
@@ -29,6 +30,42 @@ export default function Signup() {
     const timer = setTimeout(() => setFadeIn(true), 100);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!location.state?.goToOtp) return;
+
+    const email = location.state.email || "";
+    const password = location.state.password || "";
+
+    setUser((prev) => ({
+      ...prev,
+      email,
+      password,
+    }));
+
+    setOtp("");
+    setStep(3);
+
+    resendOtpForEmail(email);
+
+    // clear route state so refresh won't resend again
+    navigate(location.pathname, {
+      replace: true,
+      state: {},
+    });
+  }, [location.state, navigate, location.pathname]);
+  const resendOtpForEmail = async (email) => {
+    try {
+      await apiFetch(
+        `/api/auth/signup/resend-otp?email=${encodeURIComponent(email)}`,
+        { method: "POST" },
+      );
+
+      toast.success("OTP sent to your email");
+    } catch (err) {
+      toast.error("Failed to send OTP");
+    }
+  };
   const handleSignin = async () => {
     if (!user.email || !user.password) {
       toast.error("Email and password are required");
@@ -132,7 +169,19 @@ export default function Signup() {
             loginErr?.data?.message || loginErr.message || "";
 
           if (loginMessage.toLowerCase().includes("not verified")) {
-            toast("Email exists but not verified. Please verify OTP.");
+            try {
+              await apiFetch(
+                `/api/auth/signup/resend-otp?email=${encodeURIComponent(user.email)}`,
+                { method: "POST" },
+              );
+
+              toast.success(
+                "Account exists but email is not verified. OTP sent again.",
+              );
+            } catch (otpErr) {
+              toast.error("Account exists but failed to resend OTP.");
+            }
+
             setStep(3);
             return;
           }
@@ -385,7 +434,7 @@ export default function Signup() {
                     size={18}
                     className="absolute left-4 top-5/6 -translate-y-1/2 text-zinc-400"
                   />
-                  <p className="bg-gray-400/50 font-garamound text-2xl text-shadow-md text-center  mb-5 rounded-2xl p-6">
+                  <p className="bg-gray-400/50 font-garamound text-sm sm:text-2xl text-shadow-md text-center  mb-5 rounded-2xl p-6">
                     Your Email : {`${user.email}`}
                   </p>
                   <input

@@ -57,7 +57,23 @@ export default function Login() {
       toast.success(data?.message || "Welcome back!");
       navigate("/app");
     } catch (err) {
-      toast.error(err.message || "Login failed");
+      const message = err?.data?.message || err.message || "Login failed";
+
+      if (message.toLowerCase().includes("not verified")) {
+        toast("Email not verified. Redirecting to OTP verification...");
+
+        navigate("/signin", {
+          state: {
+            email: user.email,
+            password: user.password,
+            goToOtp: true,
+          },
+        });
+
+        return;
+      }
+
+      toast.error(message);
     } finally {
       setLoading(false);
     }
