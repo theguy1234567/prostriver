@@ -51,6 +51,6 @@ ProStriver aims to help users stay consistent with their learning, manage revisi
 
 ---
 
-##⭐ Support
+<h1>⭐ Support</h1>
 
 If you like this project, consider giving it a star on GitHub.
