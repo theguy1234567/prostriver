@@ -41,6 +41,7 @@ import { Toaster } from "react-hot-toast";
 import Analytics from "./pages/app/Analytics.jsx";
 import About from "./pages/Landing/About.jsx";
 import Feedback from "./pages/Landing/Feedback.jsx";
+import StudyPlan from "./pages/app/StudyPlan.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -69,6 +70,7 @@ const router = createBrowserRouter(
           <Route path="revisions" element={<Revisions />} />
           <Route path="topics" element={<Topics />} />
           <Route path="analytics" element={<Analytics />} />
+          <Route path="study-plan" element={<StudyPlan />} />
           <Route path="change-password" element={<ChangePassword />} />
           <Route path="challenges" element={<Challenges />} />
         </Route>
