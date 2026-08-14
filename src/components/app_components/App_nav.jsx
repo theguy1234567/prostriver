@@ -16,9 +16,39 @@ import {
   UserRound,
   KeyRound,
   LogOut,
+  BookOpen,
 } from "lucide-react";
 
 export default function App_nav({ onOpenAddTopic }) {
+  const longPressTimer = useRef(null);
+  const longPressTriggered = useRef(false);
+
+  const handlePlusPointerDown = () => {
+    longPressTriggered.current = false;
+
+    longPressTimer.current = setTimeout(() => {
+      longPressTriggered.current = true;
+      navigate("/app/study-plan");
+    }, 650);
+  };
+
+  const handlePlusPointerUp = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handlePlusClick = () => {
+    // If the long press already fired, don't also open Add Topic
+    if (longPressTriggered.current) {
+      longPressTriggered.current = false;
+      return;
+    }
+
+    onOpenAddTopic?.();
+  };
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -37,6 +67,7 @@ export default function App_nav({ onOpenAddTopic }) {
     { name: "Dashboard", path: "/app", icon: Home },
     { name: "Revisions", path: "/app/revisions", icon: RefreshCcw },
     { name: "Analytics", path: "/app/analytics", icon: BarChart3 },
+    { name: "Study Plan", path: "/app/study-plan", icon: BookOpen },
     { name: "Challenges", path: "/app/challenges", icon: Trophy },
   ];
 
@@ -219,20 +250,64 @@ export default function App_nav({ onOpenAddTopic }) {
         </div>
       </div>
 
-      {/* mobile add topic button */}
+      {/* mobile center action */}
       <div className="sm:hidden fixed bottom-[10px] left-1/2 -translate-x-1/2 z-50">
         <button
-          onClick={onOpenAddTopic}
-          className="w-20 h-20 bg-amber-400 rounded-full text-2xl text-white border-4 border-white dark:border-zinc-900 flex items-center justify-center"
+          type="button"
+          aria-label="Add topic. Hold to open Study Plan"
+          onPointerDown={handlePlusPointerDown}
+          onPointerUp={handlePlusPointerUp}
+          onPointerLeave={handlePlusPointerUp}
+          onPointerCancel={handlePlusPointerUp}
+          onClick={handlePlusClick}
+          className="
+      group
+      relative
+      flex
+      h-20
+      w-20
+      items-center
+      justify-center
+      rounded-full
+      border-4
+      border-white
+      bg-amber-400
+      text-white
+      shadow-lg
+      transition-all
+      duration-200
+      active:scale-90
+      dark:border-zinc-900
+    "
         >
-          <Plus size={28} />
+          <Plus
+            size={28}
+            strokeWidth={2.5}
+            className="transition-transform duration-200 group-active:rotate-45"
+          />
+
+          {/* Long press progress ring */}
+          <span
+            className="
+        pointer-events-none
+        absolute
+        inset-[-4px]
+        rounded-full
+        border-2
+        border-transparent
+        transition-all
+        group-active:border-white/60
+      "
+          />
         </button>
       </div>
 
       {/* mobile bottom nav */}
-      <div className="sm:hidden fixed bottom-0 left-0 w-full z-40 bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-800 flex justify-evenly gap-20 items-center py-3 shadow-lg">
-        <div className="flex gap-8">
-          {navItems.slice(0, 2).map((item) => {
+      {/* mobile bottom nav */}
+      <div className="sm:hidden fixed bottom-0 left-0 w-full z-40 bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-800 shadow-lg">
+        <div className="grid grid-cols-5 items-center px-3 py-3">
+          {/* Home */}
+          {navItems.slice(0, 1).map((item) => {
             const active = location.pathname === item.path;
             const Icon = item.icon;
 
@@ -240,20 +315,19 @@ export default function App_nav({ onOpenAddTopic }) {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex flex-col items-center transition ${
+                className={`flex flex-col items-center justify-center transition ${
                   active
                     ? "text-amber-400 scale-110"
                     : "text-gray-500 dark:text-gray-400"
                 }`}
               >
-                <Icon size={24} />
+                <Icon size={23} />
               </Link>
             );
           })}
-        </div>
 
-        <div className="flex gap-8">
-          {navItems.slice(2, 4).map((item) => {
+          {/* Revisions */}
+          {navItems.slice(1, 2).map((item) => {
             const active = location.pathname === item.path;
             const Icon = item.icon;
 
@@ -261,13 +335,56 @@ export default function App_nav({ onOpenAddTopic }) {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex flex-col items-center transition ${
+                className={`flex flex-col items-center justify-center transition ${
                   active
                     ? "text-amber-400 scale-110"
                     : "text-gray-500 dark:text-gray-400"
                 }`}
               >
-                <Icon size={24} />
+                <Icon size={23} />
+              </Link>
+            );
+          })}
+
+          {/* Center spacer for floating + button */}
+          <div className="h-8" />
+
+          {/* Analytics */}
+          {navItems.slice(2, 3).map((item) => {
+            const active = location.pathname === item.path;
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.name}
+                to={item.path}
+                className={`flex flex-col items-center justify-center transition ${
+                  active
+                    ? "text-amber-400 scale-110"
+                    : "text-gray-500 dark:text-gray-400"
+                }`}
+              >
+                <Icon size={23} />
+              </Link>
+            );
+          })}
+
+          {/* Challenges */}
+          {navItems.slice(4, 5).map((item) => {
+            const active = location.pathname === item.path;
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.name}
+                to={item.path}
+                className={`flex flex-col items-center justify-center transition ${
+                  active
+                    ? "text-amber-400 scale-110"
+                    : "text-gray-500 dark:text-gray-400"
+                }`}
+              >
+                <Icon size={23} />
               </Link>
             );
           })}

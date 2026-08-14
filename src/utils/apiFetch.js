@@ -10,12 +10,16 @@ export const apiFetch = async (endpoint, options = {}) => {
 
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       ...options,
+      body:
+        options.body && typeof options.body !== "string"
+          ? JSON.stringify(options.body)
+          : options.body,
       headers: {
         "Content-Type": "application/json",
         ...(customToken && { Authorization: `Bearer ${customToken}` }),
         ...options.headers,
       },
-      credentials: "include", // PLease DONTT FORGET THIS 
+      credentials: "include",
     });
 
     console.log("📡 STATUS:", res.status);
