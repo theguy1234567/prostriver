@@ -47,7 +47,7 @@ export default function Analytics() {
     (analytics?.challenge?.currentStreak ?? 0) > 0;
 
   return (
-    <div className="p-3 sm:p-6 min-h-screen bg-gray-200 dark:bg-[#0F172A] text-black dark:text-white">
+    <div className="p-3 sm:p-6 min-h-screen rounded-2xl bg-gray-200 dark:bg-[#0F172A] text-black dark:text-white">
       <div className="grid grid-cols-1 w-full xl:grid-cols-1 gap-4 auto-rows-auto">
         <div
           className={`relative rounded-3xl bg-white dark:bg-[#1E293B] p-5 sm:p-6 shadow-sm transition-all duration-700 ${
