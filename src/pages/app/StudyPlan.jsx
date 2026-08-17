@@ -4,10 +4,8 @@ import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
-  BarChart3,
   Check,
   ChevronRight,
-  Clock3,
   FileText,
   LoaderCircle,
   Lock,
@@ -23,7 +21,7 @@ const EMPTY_FORM = {
   topic: "",
   timeAvailable: "",
   purpose: "",
-  level: "Intermediate",
+  level: "Beginner",
   notes: "",
 };
 
@@ -64,11 +62,8 @@ const STATUS_COPY = {
 ============================================================ */
 
 export default function StudyPlan() {
-  const { dark } = useContext(ThemeContext);
+  useContext(ThemeContext);
 
-  /*
-   * Same animation approach as Analytics
-   */
   const [performanceIn, setPerformanceIn] = useState(false);
 
   const [page, setPage] = useState("list");
@@ -101,9 +96,9 @@ export default function StudyPlan() {
 
   const [retryAfter, setRetryAfter] = useState(0);
 
-  /*
-   * EXACT SAME FADE-IN AS ANALYTICS
-   */
+  /* ============================================================
+     PAGE ANIMATION
+  ============================================================ */
 
   useEffect(() => {
     const timer = setTimeout(() => setPerformanceIn(true), 120);
@@ -481,7 +476,6 @@ export default function StudyPlan() {
     setProgress((previous) => ({
       ...previous,
       completedSubtopics: optimisticCompleted,
-
       totalSubtopics: optimisticTotal || previous.totalSubtopics,
     }));
 
@@ -589,14 +583,7 @@ export default function StudyPlan() {
   }, [progress]);
 
   /* ============================================================
-     MAIN WRAPPER ANIMATION
-     
-     EXACTLY LIKE ANALYTICS:
-     
-     transition-all duration-700
-     opacity-0 translate-y-3
-     ->
-     opacity-100 translate-y-0
+     PAGE ANIMATION
   ============================================================ */
 
   const pageAnimation = `
@@ -619,6 +606,8 @@ export default function StudyPlan() {
         sm:py-6
         lg:px-8
         lg:py-8
+        xl:px-10
+        xl:py-10
         dark:bg-[#0F172A]
         dark:text-white
       "
@@ -631,7 +620,8 @@ export default function StudyPlan() {
         <div
           className={`
             mx-auto
-            max-w-[1500px]
+            w-full
+            max-w-[1600px]
             ${pageAnimation}
           `}
         >
@@ -693,8 +683,8 @@ export default function StudyPlan() {
                 font-averaiserif
                 font-bold
                 text-slate-950
-                shadow-lg
-                shadow-amber-300/10
+                
+                
                 transition-all
                 hover:bg-amber-200
                 active:scale-[0.98]
@@ -741,13 +731,13 @@ export default function StudyPlan() {
                 <div
                   key={item}
                   className="
-                      h-[190px]
-                      animate-pulse
-                      rounded-[26px]
-                      bg-white
-                      shadow-sm
-                      dark:bg-[#1D2A3E]
-                    "
+                    h-[190px]
+                    animate-pulse
+                    rounded-[26px]
+                    bg-white
+                    shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none
+                    dark:bg-[#1D2A3E]
+                  "
                 />
               ))}
             </div>
@@ -763,7 +753,7 @@ export default function StudyPlan() {
                   px-6
                   py-16
                   text-center
-                  shadow-sm
+                  shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none
                   dark:border-slate-700/70
                   dark:bg-[#1D2A3E]
                 "
@@ -839,14 +829,14 @@ export default function StudyPlan() {
                 <div
                   key={item.jobId}
                   className={`
-                        transition-all
-                        duration-700
-                        ${
-                          performanceIn
-                            ? "opacity-100 translate-y-0"
-                            : "opacity-0 translate-y-3"
-                        }
-                      `}
+                      transition-all
+                      duration-700
+                      ${
+                        performanceIn
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 translate-y-3"
+                      }
+                    `}
                   style={{
                     transitionDelay: `${index * 70}ms`,
                   }}
@@ -889,17 +879,26 @@ export default function StudyPlan() {
         <div
           className={`
             mx-auto
-            max-w-[1200px]
+            w-full
+            max-w-[1600px]
             ${pageAnimation}
           `}
         >
-          <div className="mb-5 flex items-center gap-3">
+          <div
+            className="
+              mb-6
+              flex
+              items-center
+              gap-3
+              sm:mb-7
+            "
+          >
             <button
               onClick={handleBackToPlans}
               className="
                 flex
-                h-10
-                w-10
+                h-11
+                w-11
                 shrink-0
                 items-center
                 justify-center
@@ -908,25 +907,28 @@ export default function StudyPlan() {
                 border-slate-200
                 bg-white
                 text-slate-600
-                shadow-sm
+                shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none
                 transition
                 hover:bg-slate-50
+                
                 dark:border-slate-700
                 dark:bg-[#1D2A3E]
                 dark:text-slate-300
                 dark:hover:bg-[#26364D]
               "
             >
-              <ArrowLeft size={18} />
+              <ArrowLeft size={19} />
             </button>
 
             <div className="min-w-0">
               <p
                 className="
-                  text-xs
+                  text-[11px]
+                  font-medium
                   uppercase
-                  tracking-wider
+                  tracking-[0.14em]
                   text-slate-500
+                  dark:text-slate-400
                 "
               >
                 Study Plan
@@ -938,13 +940,15 @@ export default function StudyPlan() {
                   font-averaiserif
                   text-2xl
                   font-bold
+                  leading-tight
                   text-slate-900
                   sm:text-3xl
+                  lg:text-4xl
                   dark:text-white
                 "
               >
-                {plan?.goalOverview?.topic ||
-                  selectedPlan?.input?.topic ||
+                {selectedPlan?.input?.topic ||
+                  plan?.goalOverview?.topic ||
                   "Your Study Plan"}
               </h1>
             </div>
@@ -1011,7 +1015,7 @@ function CreatePlan({
   onBack,
 }) {
   return (
-    <div className="mx-auto max-w-[900px]">
+    <div className="mx-auto w-full max-w-[900px]">
       <div className="mb-5 flex items-center gap-3">
         <button
           onClick={onBack}
@@ -1026,7 +1030,7 @@ function CreatePlan({
             border-slate-200
             bg-white
             text-slate-600
-            shadow-sm
+            shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none
             dark:border-slate-700
             dark:bg-[#1D2A3E]
             dark:text-slate-300
@@ -1069,7 +1073,7 @@ function CreatePlan({
           border-slate-200
           bg-white
           p-5
-          shadow-sm
+          shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none
           sm:p-7
           dark:border-slate-700/70
           dark:bg-[#1D2A3E]
@@ -1236,7 +1240,16 @@ function CreatePlan({
           </p>
         )}
 
-        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div
+          className="
+            mt-6
+            flex
+            flex-col-reverse
+            gap-3
+            sm:flex-row
+            sm:justify-end
+          "
+        >
           <button
             onClick={onBack}
             className="
@@ -1249,7 +1262,7 @@ function CreatePlan({
               font-averaiserif
               font-bold
               text-slate-600
-              shadow-sm
+              shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none
               dark:border-slate-700
               dark:bg-[#1D2A3E]
               dark:text-slate-300
@@ -1351,10 +1364,12 @@ function GenerationStatus({ status, description }) {
       title: "Building your study plan",
       description: "We're organizing everything around your goal.",
     },
+
     {
       title: "Finalizing your roadmap",
       description: "We're refining topics, tasks, and resources for you.",
     },
+
     {
       title: "Almost there",
       description: "Putting the finishing touches on your personalized plan.",
@@ -1397,7 +1412,7 @@ function GenerationStatus({ status, description }) {
         px-6
         py-16
         text-center
-        shadow-sm
+        shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none
         dark:border-slate-700/70
         dark:bg-[#1D2A3E]
       "
@@ -1548,6 +1563,26 @@ function StudyPlanContent({
     progress.totalSubtopics > 0 &&
     progress.completedSubtopics >= progress.totalSubtopics;
 
+  const expectedOutcomes = getExpectedOutcomes(plan);
+
+  const mainTopics = Array.isArray(plan?.mainTopics) ? plan.mainTopics : [];
+
+  // The first unfinished topic is the single active step on the
+  // main roadmap thread. This is derived from the backend's
+  // subtopic `done` state; no new backend field is required.
+  const activeTopicIndex = started
+    ? mainTopics.findIndex((topic) => {
+        const subtopics = Array.isArray(topic?.subTopics)
+          ? topic.subTopics
+          : [];
+
+        return (
+          subtopics.length === 0 ||
+          subtopics.some((subtopic) => !Boolean(subtopic?.done))
+        );
+      })
+    : -1;
+
   return (
     <div
       className="
@@ -1557,61 +1592,108 @@ function StudyPlanContent({
         translate-y-0
       "
     >
+      {/* ======================================================
+          PLAN HERO
+      ====================================================== */}
+
       <section
         className="
-          rounded-[26px]
+          rounded-[30px]
           border
           border-slate-200
           bg-white
           p-5
-          shadow-sm
+          shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none
           sm:p-7
+          lg:p-9
           dark:border-slate-700/70
           dark:bg-[#1D2A3E]
         "
       >
-        <p
+        <div
           className="
-            text-xs
-            uppercase
-            tracking-wider
-            text-slate-500
+            relative
+            flex
+            flex-col
+            gap-6
+            lg:flex-row
+            lg:items-end
+            lg:justify-between
           "
         >
-          Personalized roadmap
-        </p>
+          <div className="max-w-5xl">
+            <p
+              className="
+                text-[11px]
+                font-semibold
+                uppercase
+                tracking-[0.18em]
+                text-amber-600
+                dark:text-amber-300
+              "
+            >
+              Your learning plan
+            </p>
 
-        <h2
-          className="
-            mt-2
-            max-w-4xl
-            font-averaiserif
-            text-2xl
-            font-bold
-            text-slate-900
-            sm:text-3xl
-            dark:text-white
-          "
-        >
-          {plan.goalOverview?.expectedOutcome || "Your learning roadmap"}
-        </h2>
+            <h2
+              className="
+                mt-2
+                font-averaiserif
+                text-3xl
+                font-bold
+                leading-[1.08]
+                tracking-tight
+                text-slate-900
+                sm:text-4xl
+                lg:text-5xl
+                dark:text-white
+              "
+            >
+              {plan?.goalOverview?.topic || "Your Study Plan"}
+            </h2>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            {plan?.goalOverview?.description && (
+              <p
+                className="
+                  mt-4
+                  max-w-4xl
+                  text-sm
+                  leading-7
+                  text-slate-500
+                  sm:text-base
+                  dark:text-slate-400
+                "
+              >
+                {plan.goalOverview.description}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* ====================================================
+            META
+        ==================================================== */}
+
+        <div className="mt-7 grid gap-3 sm:grid-cols-3">
           <DetailStat
             label="Total time"
-            value={plan.goalOverview?.totalTimeAvailable || "N/A"}
+            value={plan?.goalOverview?.totalTimeAvailable || "N/A"}
           />
 
           <DetailStat
             label="Daily study"
-            value={plan.goalOverview?.recommendedDailyStudyTime || "N/A"}
+            value={plan?.goalOverview?.recommendedDailyStudyTime || "N/A"}
           />
 
           <DetailStat
             label="Level"
-            value={plan.goalOverview?.currentLevel || "N/A"}
+            value={plan?.goalOverview?.currentLevel || "N/A"}
           />
         </div>
+
+        {/* ====================================================
+            PROGRESS
+        ==================================================== */}
 
         {started && (
           <div
@@ -1620,48 +1702,60 @@ function StudyPlanContent({
               rounded-2xl
               bg-slate-50
               p-4
+              sm:p-5
               dark:bg-[#132035]
             "
           >
-            <div className="flex items-end justify-between">
+            <div className="flex items-end justify-between gap-4">
               <div>
                 <p
                   className="
-                    text-xs
+                    text-[10px]
+                    font-semibold
                     uppercase
-                    tracking-wider
-                    text-slate-500
+                    tracking-[0.15em]
+                    text-slate-400
                   "
                 >
-                  Overall progress
+                  Plan progress
                 </p>
 
                 <p
                   className="
                     mt-1
-                    font-averaiserif
-                    text-3xl
-                    font-bold
-                    text-slate-900
-                    dark:text-white
+                    text-sm
+                    font-semibold
+                    text-slate-700
+                    dark:text-slate-200
                   "
                 >
-                  {progressPercent}%
+                  {progress.completedSubtopics} of {progress.totalSubtopics}{" "}
+                  learning steps completed
                 </p>
               </div>
 
-              <p
+              <span
                 className="
                   text-sm
+                  font-semibold
                   text-slate-500
                   dark:text-slate-400
                 "
               >
-                {progress.completedSubtopics} / {progress.totalSubtopics}
-              </p>
+                {progressPercent}%
+              </span>
             </div>
 
-            <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+            <div
+              className="
+                mt-3
+                h-2.5
+                overflow-hidden
+                rounded-full
+                bg-slate-200
+                dark:bg-slate-700
+              "
+            >
               <div
                 className="
                   h-full
@@ -1691,6 +1785,7 @@ function StudyPlanContent({
               sm:flex-row
               sm:items-center
               sm:justify-between
+              sm:p-5
               dark:bg-[#132035]
             "
           >
@@ -1703,7 +1798,7 @@ function StudyPlanContent({
                   dark:text-white
                 "
               >
-                Ready to begin?
+                Your roadmap is ready.
               </p>
 
               <p
@@ -1711,10 +1806,10 @@ function StudyPlanContent({
                   mt-1
                   text-sm
                   text-slate-500
-                  dark:text-slate-500
+                  dark:text-slate-400
                 "
               >
-                Start the plan to begin tracking your progress.
+                Start the plan to unlock your learning steps.
               </p>
             </div>
 
@@ -1732,6 +1827,9 @@ function StudyPlanContent({
                 font-averaiserif
                 font-bold
                 text-slate-950
+                transition
+                hover:bg-amber-200
+                active:scale-[0.98]
               "
             >
               Start Plan
@@ -1743,29 +1841,35 @@ function StudyPlanContent({
         {completed && (
           <div
             className="
+              absolute
+              top-0
+              right-8
+              rounded-full
+              
               mt-5
               flex
               items-center
               gap-3
-              rounded-2xl
+              
               border
-              border-blue-200
-              bg-blue-50
+              border-amber-200
+              bg-amber-50
               p-4
-              dark:border-blue-400/20
-              dark:bg-blue-400/10
+              dark:border-amber-400/20
+              dark:bg-amber-400/10
             "
           >
             <div
               className="
+                
                 flex
                 h-9
                 w-9
                 items-center
                 justify-center
                 rounded-full
-                bg-blue-500
-                text-white
+                bg-amber-300
+                text-slate-950
               "
             >
               <Check size={18} />
@@ -1776,8 +1880,8 @@ function StudyPlanContent({
                 className="
                   font-averaiserif
                   font-bold
-                  text-blue-600
-                  dark:text-blue-300
+                  text-amber-700
+                  dark:text-amber-300
                 "
               >
                 Plan completed
@@ -1786,50 +1890,875 @@ function StudyPlanContent({
               <p
                 className="
                   text-sm
-                  text-blue-600/70
-                  dark:text-blue-300/60
+                  text-amber-700/70
+                  dark:text-amber-300/60
                 "
               >
-                You've completed every subtopic.
+                You've completed every learning step.
               </p>
             </div>
           </div>
         )}
       </section>
 
-      {Array.isArray(plan.mainTopics) &&
-        plan.mainTopics.map((topic, index) => (
-          <div
-            key={topic.topicId || topic.topicName || index}
-            className="
-                mt-5
-                transition-all
-                duration-700
-                opacity-100
-                translate-y-0
-              "
-            style={{
-              transitionDelay: `${(index + 1) * 70}ms`,
-            }}
-          >
-            <MainTopic
-              topic={topic}
-              index={index}
-              started={started}
-              onToggle={onToggleSubtopic}
-            />
-          </div>
-        ))}
+      {/* ======================================================
+          ROADMAP
+      ====================================================== */}
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+      {mainTopics.length > 0 && (
+        <section className="mt-8">
+          <div className="mb-5">
+            <p
+              className="
+                text-[11px]
+                font-semibold
+                uppercase
+                tracking-[0.18em]
+                text-amber-600
+                dark:text-amber-300
+              "
+            >
+              Your roadmap
+            </p>
+
+            <h2
+              className="
+                mt-1
+                font-averaiserif
+                text-2xl
+                font-bold
+                text-slate-900
+                sm:text-3xl
+                dark:text-white
+              "
+            >
+              Follow the path
+            </h2>
+
+            <p
+              className="
+                mt-1
+                text-sm
+                text-slate-500
+                dark:text-slate-400
+              "
+            >
+              Each topic builds on the one before it.
+            </p>
+          </div>
+
+          <div className="relative">
+            {mainTopics.map((topic, index) => (
+              <RoadmapTopic
+                key={topic.topicId || topic.topicName || index}
+                topic={topic}
+                index={index}
+                totalTopics={mainTopics.length}
+                started={started}
+                activeTopicIndex={activeTopicIndex}
+                onToggle={onToggleSubtopic}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ======================================================
+          SUPPORTING SECTIONS
+      ====================================================== */}
+
+      <div
+        className="
+          mt-8
+          grid
+          gap-4
+          lg:grid-cols-3
+        "
+      >
         <BottomSection title="Next Topics" items={plan.nextTopics} />
 
         <BottomSection title="Opportunities" items={plan.opportunities} />
 
         <BottomSection title="Quick Revision" items={plan.quickRevision} />
       </div>
+
+      {/* ======================================================
+          EXPECTED OUTCOMES
+      ====================================================== */}
+
+      {expectedOutcomes.length > 0 && (
+        <section
+          className="
+            mt-8
+            rounded-[26px]
+            flex
+            flex-col
+            items-center
+            justify-center
+            border
+            border-slate-200
+            bg-amber-300/80
+            p-6
+            shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none
+            sm:p-7
+            lg:p-8
+            dark:border-slate-700/70
+            dark:bg-[#1D2A3E]
+          "
+        >
+          <p
+            className="
+              text-[11px]
+              font-semibold
+              uppercase
+              tracking-[0.18em]
+              text-amber-600
+              dark:text-amber-300
+            "
+          >
+            Expected outcomes
+          </p>
+
+          <h2
+            className="
+              mt-2
+              font-averaiserif
+              text-2xl
+              font-bold
+              text-slate-900
+              dark:text-white
+            "
+          >
+            Where this plan takes you
+          </h2>
+
+          <div className="mt-5 items-center gap-3 md:grid-cols-2">
+            {expectedOutcomes.map((outcome, index) => (
+              <div
+                key={`${outcome}-${index}`}
+                className="
+                    flex
+                    items-start
+                    gap-3
+                    rounded-xl
+                    bg-slate-50
+                    p-4
+                    dark:bg-[#132035]
+                  "
+              >
+                <div
+                  className="
+                      mt-0.5
+                      flex
+                      h-6
+                      w-6
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-full
+                      bg-amber-300
+                      text-slate-950
+                    "
+                >
+                  <Check size={14} strokeWidth={2.5} />
+                </div>
+
+                <p
+                  className="
+                      text-sm
+                      font-semibold
+                      leading-6
+                      text-slate-700
+                      dark:text-slate-300
+                    "
+                >
+                  {outcome}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
+}
+
+/* ============================================================
+   ROADMAP TOPIC
+
+   IMPORTANT:
+   This is the new hierarchy.
+
+   Parent:
+          ●──── Main Topic
+          │
+          │
+          ├──── ● Subtopic
+          │
+          ├──── ● Subtopic
+          │
+          └──── ● Subtopic
+
+   The rail is physically attached to the parent node
+   and each child node.
+============================================================ */
+
+function RoadmapTopic({
+  topic,
+  index,
+  totalTopics,
+  started,
+  activeTopicIndex,
+  onToggle,
+}) {
+  const [open, setOpen] = useState(false);
+
+  const subtopics = Array.isArray(topic.subTopics) ? topic.subTopics : [];
+  const keyTopics = getKeyTopics(topic);
+
+  const completed = subtopics.filter((item) => Boolean(item.done)).length;
+  const total = subtopics.length;
+  const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const complete = total > 0 && completed === total;
+
+  const inProgress = started && !complete && index === activeTopicIndex;
+
+  const number = String(index + 1).padStart(2, "0");
+  const isLast = index === totalTopics - 1;
+
+  return (
+    <div className={`relative ${!isLast ? "pb-8" : "pb-2"}`}>
+      {/* One centered main-topic rail. Its x-position is the same
+          as the center of the 56px main node below. */}
+      {!isLast && (
+        <div
+          aria-hidden="true"
+          className="
+            absolute
+            left-[27px]
+            top-[56px]
+            bottom-0
+            z-0
+            w-[2px]
+            bg-slate-300
+            dark:bg-slate-700
+          "
+        />
+      )}
+
+      <div className="relative flex items-start gap-4">
+        {/* Main topic status node */}
+        <div
+          className={`
+            relative
+            z-20
+            flex
+            h-[56px]
+            w-[56px]
+            shrink-0
+            items-center
+            justify-center
+            rounded-full
+            border-4
+            border-gray-200
+            transition-colors
+            duration-300
+            dark:border-[#0F172A]
+            ${
+              complete
+                ? "bg-amber-300 text-slate-950"
+                : inProgress
+                  ? "bg-amber-300 text-slate-950"
+                  : "bg-white text-slate-600 dark:bg-[#1D2A3E] dark:text-slate-300"
+            }
+          `}
+        >
+          {complete ? (
+            <Check size={23} strokeWidth={3} className="block shrink-0" />
+          ) : (
+            <span className="block text-sm font-bold leading-none">
+              {number}
+            </span>
+          )}
+        </div>
+
+        {/* Main topic card */}
+        <div className="min-w-0 flex-1">
+          <button
+            type="button"
+            onClick={() => setOpen((value) => !value)}
+            className="
+              group
+              w-full
+              rounded-[24px]
+              border
+              border-slate-200
+              bg-white
+              p-5
+              text-left
+              shadow-[0_1px_2px_rgba(15,23,42,0.04)]
+              dark:shadow-none
+              transition-colors
+              duration-300
+              sm:p-6
+              dark:border-slate-700/70
+              dark:bg-[#1D2A3E]
+            "
+          >
+            <div className="flex items-start gap-4">
+              <div className="min-w-0 flex-1">
+                <h3
+                  className="
+                    mt-1
+                    font-averaiserif
+                    text-xl
+                    font-bold
+                    leading-tight
+                    text-slate-900
+                    sm:text-2xl
+                    dark:text-white
+                  "
+                >
+                  {topic.topicName}
+                </h3>
+
+                <div
+                  className="
+                    mt-2
+                    flex
+                    flex-wrap
+                    items-center
+                    gap-2
+                    text-xs
+                    text-slate-500
+                    dark:text-slate-400
+                  "
+                >
+                  <span>
+                    {completed}/{total} steps
+                  </span>
+                  <span aria-hidden="true">•</span>
+                  <span>{topic.estimatedStudyTime || "Study time"}</span>
+                  <span aria-hidden="true">•</span>
+                  <span>{topic.difficultyLevel || "Medium"}</span>
+                </div>
+              </div>
+
+              <div
+                className={`
+                  flex
+                  h-9
+                  w-9
+                  shrink-0
+                  items-center
+                  justify-center
+                  rounded-full
+                  bg-slate-50
+                  text-slate-400
+                  transition-transform
+                  duration-300
+                  group-hover:text-slate-600
+                  dark:bg-[#132035]
+                  dark:text-slate-500
+                  ${open ? "rotate-90" : ""}
+                `}
+              >
+                <ChevronRight size={19} className="block shrink-0" />
+              </div>
+            </div>
+
+            {keyTopics.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {keyTopics.map((item, keyIndex) => (
+                  <span
+                    key={`${item}-${keyIndex}`}
+                    className="
+                      rounded-full
+                      bg-slate-100
+                      px-3
+                      py-1.5
+                      text-[11px]
+                      font-medium
+                      text-slate-600
+                      dark:bg-[#23344B]
+                      dark:text-slate-300
+                    "
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-5">
+              <div className="mb-1.5 flex items-center justify-between">
+                <span
+                  className="
+                    text-[10px]
+                    font-semibold
+                    uppercase
+                    tracking-wider
+                    text-slate-400
+                  "
+                >
+                  Step progress
+                </span>
+
+                <span
+                  className="
+                    text-[11px]
+                    font-semibold
+                    text-slate-500
+                    dark:text-slate-400
+                  "
+                >
+                  {percentage}%
+                </span>
+              </div>
+
+              <div
+                className="
+                  h-2
+                  overflow-hidden
+                  rounded-full
+                  bg-slate-200
+                  dark:bg-slate-700
+                "
+              >
+                <div
+                  className={`
+                    h-full
+                    rounded-full
+                    transition-all
+                    duration-500
+                    ${
+                      complete
+                        ? "bg-blue-500"
+                        : inProgress
+                          ? "bg-amber-300"
+                          : "bg-slate-300 dark:bg-slate-600"
+                    }
+                  `}
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
+            </div>
+          </button>
+
+          {open && subtopics.length > 0 && (
+            <div className="relative mt-3 space-y-2 pl-0 animate-studyplan-fade">
+              {subtopics.map((subtopic, subIndex) => {
+                const previous = subIndex > 0 ? subtopics[subIndex - 1] : null;
+
+                const unlocked =
+                  started && (!previous || Boolean(previous.done));
+
+                return (
+                  <RoadmapSubtopic
+                    key={
+                      subtopic.subtopicId || subtopic.subTopicName || subIndex
+                    }
+                    subtopic={subtopic}
+                    index={subIndex}
+                    unlocked={unlocked}
+                    started={started}
+                    isLast={subIndex === subtopics.length - 1}
+                    onToggle={onToggle}
+                  />
+                );
+              })}
+            </div>
+          )}
+
+          {open && (
+            <div className="mt-4 space-y-2 pl-0">
+              {topic.completionOutcome && (
+                <div
+                  className="
+                    rounded-2xl
+                    bg-slate-50
+                    p-4
+                    dark:bg-[#132035]
+                  "
+                >
+                  <p
+                    className="
+                      text-[10px]
+                      font-semibold
+                      uppercase
+                      tracking-[0.15em]
+                      text-amber-600
+                      dark:text-amber-300
+                    "
+                  >
+                    Topic outcome
+                  </p>
+
+                  <p
+                    className="
+                      mt-1
+                      text-sm
+                      leading-6
+                      text-slate-500
+                      dark:text-slate-400
+                    "
+                  >
+                    {topic.completionOutcome}
+                  </p>
+                </div>
+              )}
+
+              {topic.commonMistakes?.length > 0 && (
+                <Accordion
+                  title="Common mistakes"
+                  items={topic.commonMistakes}
+                />
+              )}
+
+              {topic.keyTips?.length > 0 && (
+                <Accordion title="Key tips" items={topic.keyTips} />
+              )}
+
+              {topic.resources && (
+                <ResourceAccordion resources={topic.resources} />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   ROADMAP SUBTOPIC
+
+   All subtopic status nodes share exactly the same center
+   point as the main roadmap node. One continuous rail is
+   used for the child sequence, so no duplicate lines appear.
+============================================================ */
+
+function RoadmapSubtopic({
+  subtopic,
+  index,
+  unlocked,
+  started,
+  isLast,
+  onToggle,
+}) {
+  const complete = Boolean(subtopic.done);
+  const inProgress = started && unlocked && !complete;
+  const canToggle = started && unlocked;
+
+  return (
+    <div className="group relative min-h-[98px] pl-8 pt-2">
+      {/* Child elbow: aligned to the center of the roadmap node. */}
+      <div
+        aria-hidden="true"
+        className="
+          absolute
+          left-[-45px]
+          top-0
+          h-[48px]
+          w-[69px]
+          rounded-bl-[14px]
+          border-b-2
+          border-l-2
+          border-slate-300
+          dark:border-slate-700
+        "
+      />
+
+      {/* Continuation line between subtopics. */}
+      {!isLast && (
+        <div
+          aria-hidden="true"
+          className="
+            absolute
+            left-[-45px]
+            top-[48px]
+            bottom-0
+            z-0
+            w-[2px]
+            bg-slate-300
+            dark:bg-slate-700
+          "
+        />
+      )}
+
+      {/* Single status node. */}
+      <div
+        className={`
+          absolute
+          left-[-16px]
+          top-[30px]
+          z-10
+          flex
+          h-8
+          w-8
+          items-center
+          justify-center
+          rounded-full
+          border-2
+          border-white
+          bg-amber-300
+          transition-colors
+          duration-300
+          dark:border-[#1D2A3E]
+          ${
+            complete
+              ? "bg--300 text-slate-950"
+              : inProgress
+                ? "bg-amber-200 text-slate-950"
+                : "bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-500"
+          }
+        `}
+      >
+        {complete ? (
+          <Check size={14} strokeWidth={3} className="block shrink-0" />
+        ) : (
+          <span className="block text-[10px] font-bold leading-none">
+            {index + 1}
+          </span>
+        )}
+      </div>
+
+      {/* Subtopic card */}
+      <div
+        className={`
+          relative
+          rounded-2xl
+          border
+          p-4
+          transition-colors
+          duration-300
+          ${
+            complete
+              ? " border-0 shadow-md border-sky-400 bg-sky-400/40  dark:border-sky-300/20 dark:bg-sky-300/5"
+              : inProgress
+                ? "border-amber-200/20 bg-gray-400/20 dark:border-amber-300/20 dark:bg-white-300/10"
+                : "border-slate-200 bg-slate-50 opacity-60 dark:border-slate-800 dark:bg-[#142033]"
+          }
+        `}
+      >
+        <div className="flex items-center gap-4">
+          <div className="min-w-0 flex-1">
+            <h4
+              className={`
+                text-sm
+                font-semibold
+                leading-6
+                ${
+                  complete
+                    ? "text-amber-700 text-shadow-2xs  dark:text-amber-300"
+                    : inProgress
+                      ? "text-amber-700 dark:text-amber-300"
+                      : "text-slate-700 dark:text-slate-200"
+                }
+              `}
+            >
+              {subtopic.subTopicName}
+            </h4>
+
+            {subtopic.whatToLearn && (
+              <p
+                className="
+                  mt-1
+                  text-[13px]
+                  leading-5
+                  text-slate-500
+                  dark:text-slate-400
+                "
+              >
+                {subtopic.whatToLearn}
+              </p>
+            )}
+
+            {Array.isArray(subtopic.keyConcepts) &&
+              subtopic.keyConcepts.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {subtopic.keyConcepts.map((concept, conceptIndex) => (
+                    <span
+                      key={`${concept}-${conceptIndex}`}
+                      className="
+                        rounded-full
+                        bg-white
+                        px-2.5
+                        py-1
+                        text-[10px]
+                        font-medium
+                        text-slate-500
+                        dark:bg-[#23344B]
+                        dark:text-slate-400
+                      "
+                    >
+                      {concept}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+            {!complete && started && !unlocked && (
+              <div
+                className="
+                  mt-3
+                  flex
+                  items-center
+                  gap-1.5
+                  text-[11px]
+                  text-slate-400
+                  dark:text-slate-500
+                "
+              >
+                <Lock size={11} className="shrink-0" />
+                Complete the previous step first
+              </div>
+            )}
+          </div>
+
+          {/* Proper completion/revisit toggle */}
+          <button
+            type="button"
+            disabled={!canToggle}
+            onClick={() => onToggle(subtopic.subtopicId, !complete)}
+            aria-pressed={complete}
+            aria-label={
+              complete
+                ? `Revisit ${subtopic.subTopicName}`
+                : `Mark ${subtopic.subTopicName} complete`
+            }
+            className="
+              shrink-0
+              rounded-full
+              p-1
+              outline-none
+              transition-opacity
+              focus-visible:ring-2
+              focus-visible:ring-amber-300
+              disabled:cursor-not-allowed
+              disabled:opacity-50
+            "
+          >
+            <span
+              className={`
+                relative
+                flex
+                h-7
+                w-12
+                items-center
+                rounded-full
+                border
+                transition-colors
+                duration-300
+                ease-out
+                ${
+                  complete
+                    ? "border-amber-300 bg-amber-300"
+                    : "border-slate-300 bg-slate-200 dark:border-slate-600 dark:bg-slate-700"
+                }
+              `}
+            >
+              <span
+                className={`
+                  absolute
+                  top-1/2
+                  flex
+                  h-5
+                  w-5
+                  -translate-y-1/2
+                  items-center
+                  justify-center
+                  rounded-full
+                  bg-white
+                  text-amber-500
+                  shadow-[0_1px_2px_rgba(15,23,42,0.08)]
+                  transition-transform
+                  duration-300
+                  ease-out
+                  ${complete ? "translate-x-6" : "translate-x-1"}
+                `}
+              >
+                <Check
+                  size={12}
+                  strokeWidth={3}
+                  className={`
+                    transition-all
+                    duration-200
+                    ease-out
+                    ${complete ? "scale-100 opacity-100" : "scale-50 opacity-0"}
+                  `}
+                />
+              </span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   KEY TOPICS
+============================================================ */
+
+function getKeyTopics(topic) {
+  const raw =
+    Array.isArray(topic?.keyTopics) && topic.keyTopics.length > 0
+      ? topic.keyTopics
+      : Array.isArray(topic?.keyConcepts)
+        ? topic.keyConcepts
+        : [];
+
+  return raw
+    .map((item) => {
+      if (typeof item === "string") {
+        return item;
+      }
+
+      return (
+        item?.title ||
+        item?.name ||
+        item?.topicName ||
+        item?.label ||
+        item?.concept ||
+        ""
+      );
+    })
+    .filter(Boolean);
+}
+
+/* ============================================================
+   EXPECTED OUTCOMES
+============================================================ */
+
+function getExpectedOutcomes(plan) {
+  const multiple = plan?.goalOverview?.expectedOutcomes;
+
+  if (Array.isArray(multiple)) {
+    return multiple
+      .map((item) => {
+        if (typeof item === "string") {
+          return item;
+        }
+
+        return item?.description || item?.outcome || item?.title || "";
+      })
+      .filter(Boolean);
+  }
+
+  const single = plan?.goalOverview?.expectedOutcome;
+
+  if (typeof single === "string" && single.trim()) {
+    return [single];
+  }
+
+  if (single && typeof single === "object") {
+    const value = single.description || single.outcome || single.title || "";
+
+    return value ? [value] : [];
+  }
+
+  return [];
 }
 
 /* ============================================================
@@ -1840,7 +2769,7 @@ function DetailStat({ label, value }) {
   return (
     <div
       className="
-        rounded-xl
+        rounded-2xl
         bg-slate-50
         p-4
         dark:bg-[#132035]
@@ -1848,10 +2777,11 @@ function DetailStat({ label, value }) {
     >
       <p
         className="
-          text-xs
+          text-[10px]
+          font-semibold
           uppercase
-          tracking-wider
-          text-slate-500
+          tracking-[0.14em]
+          text-slate-400
         "
       >
         {label}
@@ -1868,412 +2798,6 @@ function DetailStat({ label, value }) {
       >
         {value}
       </p>
-    </div>
-  );
-}
-
-/* ============================================================
-   MAIN TOPIC
-============================================================ */
-
-function MainTopic({ topic, index, started, onToggle }) {
-  const [open, setOpen] = useState(false);
-
-  const subtopics = Array.isArray(topic.subTopics) ? topic.subTopics : [];
-
-  const completed = subtopics.filter((item) => item.done).length;
-
-  const total = subtopics.length;
-
-  const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-  const complete = total > 0 && completed === total;
-
-  const topicNumber = String(index + 1).padStart(2, "0");
-
-  return (
-    <section
-      className="
-        overflow-hidden
-        rounded-[26px]
-        border
-        border-slate-200
-        bg-white
-        shadow-sm
-        dark:border-slate-700/70
-        dark:bg-[#1D2A3E]
-      "
-    >
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        className="
-          flex
-          w-full
-          items-center
-          gap-4
-          p-5
-          text-left
-          transition
-          hover:bg-slate-50
-          sm:p-6
-          dark:hover:bg-[#202F45]
-        "
-      >
-        <div
-          className={`
-            flex
-            h-12
-            w-12
-            shrink-0
-            items-center
-            justify-center
-            rounded-xl
-            ${
-              complete
-                ? "bg-blue-50 text-blue-600 dark:bg-blue-400/15 dark:text-blue-300"
-                : "bg-amber-300 text-slate-950"
-            }
-          `}
-        >
-          {complete ? (
-            <Check size={23} strokeWidth={2.5} />
-          ) : (
-            <span
-              className="
-                text-sm
-                font-bold
-                tracking-wide
-              "
-            >
-              {topicNumber}
-            </span>
-          )}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <h2
-            className="
-              font-averaiserif
-              text-lg
-              font-bold
-              leading-tight
-              text-slate-900
-              sm:text-xl
-              dark:text-white
-            "
-          >
-            {topic.topicName}
-          </h2>
-
-          <div
-            className="
-              mt-2
-              flex
-              flex-wrap
-              items-center
-              gap-3
-              text-xs
-              text-slate-500
-              dark:text-slate-400
-            "
-          >
-            <span>
-              {completed}/{total} tasks
-            </span>
-
-            <span>•</span>
-
-            <span>{topic.estimatedStudyTime || "Study time"}</span>
-
-            <span>•</span>
-
-            <span>{topic.difficultyLevel || "Medium"}</span>
-          </div>
-
-          <div className="mt-3 max-w-xl">
-            <div className="mb-1.5 flex justify-between">
-              <span
-                className="
-                  text-[10px]
-                  uppercase
-                  tracking-wider
-                  text-slate-400
-                  dark:text-slate-500
-                "
-              >
-                Topic progress
-              </span>
-
-              <span
-                className="
-                  text-[11px]
-                  text-slate-500
-                  dark:text-slate-400
-                "
-              >
-                {percentage}%
-              </span>
-            </div>
-
-            <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-              <div
-                className={`
-                  h-full
-                  rounded-full
-                  transition-all
-                  duration-500
-                  ${complete ? "bg-blue-500" : "bg-amber-300"}
-                `}
-                style={{
-                  width: `${percentage}%`,
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
-        <ChevronRight
-          size={22}
-          className={`
-            shrink-0
-            text-slate-400
-            transition-transform
-            duration-300
-            ${open ? "rotate-90" : ""}
-          `}
-        />
-      </button>
-
-      {open && (
-        <div
-          className="
-            border-t
-            border-slate-200
-            p-5
-            sm:p-6
-            dark:border-slate-700/70
-          "
-        >
-          {topic.completionOutcome && (
-            <div
-              className="
-                mb-5
-                rounded-xl
-                bg-slate-50
-                p-4
-                dark:bg-[#132035]
-              "
-            >
-              <p
-                className="
-                  text-xs
-                  uppercase
-                  tracking-wider
-                  text-slate-500
-                "
-              >
-                Outcome
-              </p>
-
-              <p
-                className="
-                  mt-1
-                  text-sm
-                  leading-6
-                  text-slate-500
-                  dark:text-slate-400
-                "
-              >
-                {topic.completionOutcome}
-              </p>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            {subtopics.map((subtopic, subIndex) => {
-              const previous = subIndex > 0 ? subtopics[subIndex - 1] : null;
-
-              const unlocked = started && (!previous || Boolean(previous.done));
-
-              return (
-                <Subtopic
-                  key={subtopic.subtopicId || subtopic.subTopicName || subIndex}
-                  subtopic={subtopic}
-                  index={subIndex}
-                  unlocked={unlocked}
-                  started={started}
-                  onToggle={onToggle}
-                />
-              );
-            })}
-          </div>
-
-          <div className="mt-5 space-y-2">
-            {topic.commonMistakes?.length > 0 && (
-              <Accordion title="Common mistakes" items={topic.commonMistakes} />
-            )}
-
-            {topic.keyTips?.length > 0 && (
-              <Accordion title="Key tips" items={topic.keyTips} />
-            )}
-
-            {topic.resources && (
-              <ResourceAccordion resources={topic.resources} />
-            )}
-          </div>
-        </div>
-      )}
-    </section>
-  );
-}
-
-/* ============================================================
-   SUBTOPIC
-============================================================ */
-
-function Subtopic({ subtopic, index, unlocked, started, onToggle }) {
-  const complete = Boolean(subtopic.done);
-
-  const canClick = started && unlocked;
-
-  return (
-    <div
-      className={`
-        rounded-xl
-        border
-        p-4
-        transition-all
-        ${
-          complete
-            ? "border-blue-200 bg-blue-50/60 dark:border-blue-400/20 dark:bg-blue-400/5"
-            : unlocked
-              ? "border-slate-200 bg-slate-50 hover:border-slate-300 dark:border-slate-700 dark:bg-[#17263A] dark:hover:border-slate-600"
-              : "border-slate-200 bg-slate-50 opacity-60 dark:border-slate-800 dark:bg-[#142033]"
-        }
-      `}
-    >
-      <div className="flex items-start gap-3">
-        <button
-          type="button"
-          disabled={!canClick}
-          onClick={() => onToggle(subtopic.subtopicId, !complete)}
-          className={`
-            mt-0.5
-            flex
-            h-9
-            w-9
-            shrink-0
-            items-center
-            justify-center
-            rounded-lg
-            transition
-            ${
-              complete
-                ? "bg-blue-500 text-white"
-                : canClick
-                  ? "bg-amber-300 text-slate-950 hover:bg-amber-200"
-                  : "bg-slate-200 text-slate-400 dark:bg-slate-700 dark:text-slate-500"
-            }
-          `}
-        >
-          {complete ? (
-            <Check size={18} strokeWidth={2.5} />
-          ) : unlocked ? (
-            <span className="text-xs font-bold">
-              {String(index + 1).padStart(2, "0")}
-            </span>
-          ) : (
-            <Lock size={15} />
-          )}
-        </button>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start gap-2">
-            <span
-              className="
-                text-[11px]
-                font-semibold
-                text-slate-400
-                dark:text-slate-500
-              "
-            >
-              {String(index + 1).padStart(2, "0")}
-            </span>
-
-            <h3
-              className={`
-                text-sm
-                font-semibold
-                leading-6
-                ${
-                  complete
-                    ? "text-blue-600 line-through dark:text-blue-300"
-                    : "text-slate-700 dark:text-slate-200"
-                }
-              `}
-            >
-              {subtopic.subTopicName}
-            </h3>
-          </div>
-
-          {subtopic.whatToLearn && (
-            <p
-              className="
-                mt-1
-                pl-7
-                text-[13px]
-                leading-5
-                text-slate-500
-                dark:text-slate-400
-              "
-            >
-              {subtopic.whatToLearn}
-            </p>
-          )}
-
-          {Array.isArray(subtopic.keyConcepts) &&
-            subtopic.keyConcepts.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5 pl-7">
-                {subtopic.keyConcepts.map((concept) => (
-                  <span
-                    key={concept}
-                    className="
-                        rounded-md
-                        bg-slate-100
-                        px-2
-                        py-1
-                        text-[11px]
-                        text-slate-500
-                        dark:bg-[#23344B]
-                        dark:text-slate-400
-                      "
-                  >
-                    {concept}
-                  </span>
-                ))}
-              </div>
-            )}
-
-          {!complete && started && !unlocked && (
-            <div
-              className="
-                  mt-3
-                  flex
-                  items-center
-                  gap-1.5
-                  pl-7
-                  text-[11px]
-                  text-slate-400
-                  dark:text-slate-500
-                "
-            >
-              <Lock size={11} />
-              Complete the previous task first
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   );
 }
@@ -2311,7 +2835,14 @@ function Accordion({ title, items }) {
       >
         {title}
 
-        <ChevronRight size={16} className={open ? "rotate-90" : ""} />
+        <ChevronRight
+          size={16}
+          className={`
+            transition-transform
+            duration-200
+            ${open ? "rotate-90" : ""}
+          `}
+        />
       </button>
 
       {open && (
@@ -2367,7 +2898,9 @@ function ResourceAccordion({ resources }) {
 
   const all = [
     resources?.documentation,
+
     ...(Array.isArray(resources?.youtube) ? resources.youtube : []),
+
     resources?.extra,
   ].filter(Boolean);
 
@@ -2400,7 +2933,14 @@ function ResourceAccordion({ resources }) {
         "
       >
         Resources
-        <ChevronRight size={16} className={open ? "rotate-90" : ""} />
+        <ChevronRight
+          size={16}
+          className={`
+            transition-transform
+            duration-200
+            ${open ? "rotate-90" : ""}
+          `}
+        />
       </button>
 
       {open && (
@@ -2471,7 +3011,7 @@ function BottomSection({ title, items }) {
         border-slate-200
         bg-white
         p-5
-        shadow-sm
+        shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:shadow-none
         dark:border-slate-700/70
         dark:bg-[#1D2A3E]
       "
