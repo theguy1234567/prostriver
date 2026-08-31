@@ -11,6 +11,8 @@ import {
   Lock,
   Plus,
   XCircle,
+  Globe,
+  Play,
 } from "lucide-react";
 
 import { apiFetch } from "../../utils/apiFetch";
@@ -2911,11 +2913,16 @@ function ResourceAccordion({ resources }) {
   const [open, setOpen] = useState(false);
 
   const all = [
-    resources?.documentation,
-
-    ...(Array.isArray(resources?.youtube) ? resources.youtube : []),
-
-    resources?.extra,
+    resources?.documentation
+      ? { ...resources.documentation, resourceIcon: "documentation" }
+      : null,
+    ...(Array.isArray(resources?.youtube)
+      ? resources.youtube.map((resource) => ({
+          ...resource,
+          resourceIcon: "youtube",
+        }))
+      : []),
+    resources?.extra ? { ...resources.extra, resourceIcon: "extra" } : null,
   ].filter(Boolean);
 
   if (!all.length) {
@@ -2982,14 +2989,34 @@ function ResourceAccordion({ resources }) {
                   dark:bg-[#1D2A3E]
                 "
             >
-              <FileText
-                size={15}
-                className="
-                    shrink-0
-                    text-slate-400
-                    dark:text-slate-500
-                  "
-              />
+              {resource.resourceIcon === "youtube" ? (
+                <Play
+                  size={15}
+                  className="
+          shrink-0
+          text-slate-400
+          dark:text-slate-500
+        "
+                />
+              ) : resource.resourceIcon === "extra" ? (
+                <Globe
+                  size={15}
+                  className="
+          shrink-0
+          text-slate-400
+          dark:text-slate-500
+        "
+                />
+              ) : (
+                <FileText
+                  size={15}
+                  className="
+          shrink-0
+          text-slate-400
+          dark:text-slate-500
+        "
+                />
+              )}
 
               <span
                 className="
