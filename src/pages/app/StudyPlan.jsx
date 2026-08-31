@@ -3153,3 +3153,4 @@ function BottomSection({ title, items }) {
     </section>
   );
 }
+// final push (categorized resources in studyplan)
