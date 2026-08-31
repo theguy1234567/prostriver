@@ -2576,25 +2576,39 @@ function RoadmapSubtopic({
 
             {Array.isArray(subtopic.keyConcepts) &&
               subtopic.keyConcepts.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {subtopic.keyConcepts.map((concept, conceptIndex) => (
-                    <span
-                      key={`${concept}-${conceptIndex}`}
-                      className="
-                        rounded-full
-                        bg-white
-                        px-2.5
-                        py-1
-                        text-[10px]
-                        font-medium
-                        text-slate-500
-                        dark:bg-[#23344B]
-                        dark:text-slate-400
-                      "
-                    >
-                      {concept}
-                    </span>
-                  ))}
+                <div className="mt-3">
+                  <h1
+                    className="
+                    mb-2
+                    text-[12px]
+                    font-medium
+                    text-slate-500
+                    dark:text-slate-400
+                  "
+                  >
+                    Topics to focus on
+                  </h1>
+
+                  <div className="flex flex-wrap gap-1.5">
+                    {subtopic.keyConcepts.map((concept, conceptIndex) => (
+                      <span
+                        key={`${concept}-${conceptIndex}`}
+                        className="
+              rounded-full
+              bg-white
+              px-2.5
+              py-1
+              text-[10px]
+              font-medium
+              text-slate-500
+              dark:bg-[#23344B]
+              dark:text-slate-400
+            "
+                      >
+                        {concept}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
 
