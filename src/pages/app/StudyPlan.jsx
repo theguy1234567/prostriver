@@ -2912,20 +2912,16 @@ function Accordion({ title, items }) {
 function ResourceAccordion({ resources }) {
   const [open, setOpen] = useState(false);
 
-  const all = [
-    resources?.documentation
-      ? { ...resources.documentation, resourceIcon: "documentation" }
-      : null,
-    ...(Array.isArray(resources?.youtube)
-      ? resources.youtube.map((resource) => ({
-          ...resource,
-          resourceIcon: "youtube",
-        }))
-      : []),
-    resources?.extra ? { ...resources.extra, resourceIcon: "extra" } : null,
-  ].filter(Boolean);
+  const documents = resources?.documentation ? [resources.documentation] : [];
 
-  if (!all.length) {
+  const youtube = Array.isArray(resources?.youtube) ? resources.youtube : [];
+
+  const other = resources?.extra ? [resources.extra] : [];
+
+  const hasResources =
+    documents.length > 0 || youtube.length > 0 || other.length > 0;
+
+  if (!hasResources) {
     return null;
   }
 
@@ -2967,7 +2963,7 @@ function ResourceAccordion({ resources }) {
       {open && (
         <div
           className="
-            space-y-2
+            space-y-4
             border-t
             border-slate-200
             px-4
@@ -2975,60 +2971,117 @@ function ResourceAccordion({ resources }) {
             dark:border-slate-700/60
           "
         >
-          {all.map((resource, index) => (
-            <div
-              key={`${resource.title || resource.name}-${index}`}
-              className="
-                  flex
-                  items-center
-                  gap-3
-                  rounded-lg
-                  bg-white
-                  px-3
-                  py-2.5
-                  dark:bg-[#1D2A3E]
-                "
-            >
-              {resource.resourceIcon === "youtube" ? (
-                <Play
-                  size={15}
-                  className="
-          shrink-0
-          text-slate-400
-          dark:text-slate-500
-        "
-                />
-              ) : resource.resourceIcon === "extra" ? (
-                <Globe
-                  size={15}
-                  className="
-          shrink-0
-          text-slate-400
-          dark:text-slate-500
-        "
-                />
-              ) : (
-                <FileText
-                  size={15}
-                  className="
-          shrink-0
-          text-slate-400
-          dark:text-slate-500
-        "
-                />
-              )}
-
-              <span
+          {/* DOCUMENTS */}
+          {documents.length > 0 && (
+            <div>
+              <h4
                 className="
-                    text-sm
-                    text-slate-600
-                    dark:text-slate-300
-                  "
+                  mb-2
+                  text-[10px]
+                  font-semibold
+                  uppercase
+                  tracking-wide
+                  text-slate-500
+                  dark:text-slate-400
+                "
               >
-                {resource.title || resource.name || "Learning resource"}
-              </span>
+                Documents
+              </h4>
+
+              <div className="space-y-2">
+                {documents.map((resource, index) => (
+                  <div
+                    key={`document-${index}`}
+                    className="
+                      flex
+                      items-center
+                      gap-3
+                      rounded-lg
+                      bg-white
+                      px-3
+                      py-2.5
+                      dark:bg-[#1D2A3E]
+                    "
+                  >
+                    <FileText
+                      size={15}
+                      className="
+                        shrink-0
+                        text-slate-400
+                        dark:text-slate-500
+                      "
+                    />
+
+                    <span
+                      className="
+                        text-sm
+                        text-slate-600
+                        dark:text-slate-300
+                      "
+                    >
+                      {resource.title || resource.name || "Learning resource"}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+          )}
+
+          {/* YOUTUBE */}
+          {youtube.length > 0 && (
+            <div>
+              <h4
+                className="
+                  mb-2
+                  text-[10px]
+                  font-semibold
+                  uppercase
+                  tracking-wide
+                  text-slate-500
+                  dark:text-slate-400
+                "
+              >
+                YouTube
+              </h4>
+
+              <div className="space-y-2">
+                {youtube.map((resource, index) => (
+                  <div
+                    key={`youtube-${index}`}
+                    className="
+                      flex
+                      items-center
+                      gap-3
+                      rounded-lg
+                      bg-white
+                      px-3
+                      py-2.5
+                      dark:bg-[#1D2A3E]
+                    "
+                  >
+                    <Play
+                      size={15}
+                      className="
+                        shrink-0
+                        text-slate-400
+                        dark:text-slate-500
+                      "
+                    />
+
+                    <span
+                      className="
+                        text-sm
+                        text-slate-600
+                        dark:text-slate-300
+                      "
+                    >
+                      {resource.title || resource.name || "Learning resource"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
